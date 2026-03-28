@@ -1,0 +1,64 @@
+<!-- Chatbot Widget - Include this in base.html before </body> -->
+<div id="chatbotWidget" class="chatbot-widget">
+    <!-- Toggle Button -->
+    <button id="chatbotToggle" class="chatbot-toggle" title="Chat with us">
+        <i class="fas fa-comments"></i>
+        <span class="chatbot-badge" id="chatbotBadge" style="display: none;">1</span>
+    </button>
+
+    <!-- Chat Window -->
+    <div id="chatbotWindow" class="chatbot-window" style="display: none;">
+        <!-- Header -->
+        <div class="chatbot-header">
+            <div class="chatbot-header-info">
+                <div class="chatbot-avatar-container">
+                    <span style="font-size: 24px;">🤖</span>
+                </div>
+                <div class="chatbot-header-text">
+                    <h6>Hospital Assistant</h6>
+                    <div class="chatbot-status">
+                        <span class="chatbot-status-dot"></span>
+                        <small>Online</small>
+                    </div>
+                </div>
+            </div>
+            <button class="chatbot-close" id="chatbotClose" title="Close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Messages -->
+        <div class="chatbot-messages" id="chatbotMessages">
+            <!-- Welcome Message -->
+            <div class="chat-message bot">
+                <div class="message-bubble">
+                    <p>👋 Hello! I'm your Smart Hospital assistant. How can I help you today?</p>
+                    <div class="quick-replies">
+                        <button class="quick-reply-btn" data-message="Find a doctor">Find a doctor</button>
+                        <button class="quick-reply-btn" data-message="Hospital timings">Hospital timings</button>
+                        <button class="quick-reply-btn" data-message="Book appointment">Book appointment</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input -->
+        <div class="chatbot-input">
+            <input type="text" id="chatbotInput" placeholder="Type your message..." autocomplete="off">
+            <button id="chatbotSend" class="chatbot-send-btn" disabled>
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+
+        <!-- Footer -->
+        <div class="chatbot-footer">
+            Powered by Smart Hospital
+        </div>
+    </div>
+</div>
+
+<!-- Include CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
+
+<!-- Include JS -->
+<script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>

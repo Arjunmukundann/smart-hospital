@@ -1,0 +1,13 @@
+drug1,drug2,severity,description,recommendation
+warfarin,aspirin,high,Increased risk of bleeding when used together,Monitor closely for signs of bleeding; consider alternatives
+metformin,alcohol,high,Increased risk of lactic acidosis,Avoid alcohol consumption while on Metformin
+simvastatin,erythromycin,high,Increased risk of myopathy/rhabdomyolysis,Avoid combination; use alternative antibiotic
+lisinopril,potassium,medium,Risk of hyperkalemia,Monitor potassium levels regularly
+ciprofloxacin,antacids,medium,Reduced absorption of Ciprofloxacin,Take Ciprofloxacin 2 hours before antacids
+methotrexate,ibuprofen,high,Increased Methotrexate toxicity,Avoid NSAIDs; use Paracetamol instead
+digoxin,amiodarone,high,Increased Digoxin levels and toxicity,Reduce Digoxin dose by 50%
+clopidogrel,omeprazole,medium,Reduced antiplatelet effect of Clopidogrel,Use alternative PPI like Pantoprazole
+warfarin,vitamin k,medium,Vitamin K reduces Warfarin effectiveness,Maintain consistent Vitamin K intake
+phenytoin,carbamazepine,medium,Altered drug levels,Monitor drug levels closely
+lithium,nsaid,high,Increased lithium toxicity,Avoid NSAIDs; monitor lithium levels
+theophylline,ciprofloxacin,high,Increased theophylline levels,Reduce theophylline dose; monitor levels

@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}Dispense Prescription - Pharmacy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pharmacy.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-pills text-primary"></i> Dispense Prescription</h2>
+            <p class="text-muted mb-0">Prescription: <code>{{ prescription.prescription_id }}</code></p>
+        </div>
+        <a href="{{ url_for('pharmacy.prescriptions') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Prescription Details -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-file-prescription"></i> Prescription Info</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless table-sm mb-0">
+                        <tr>
+                            <td class="text-muted">Rx ID:</td>
+                            <td><strong>{{ prescription.prescription_id }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Patient:</td>
+                            <td>{{ prescription.patient.full_name if prescription.patient else 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Patient ID:</td>
+                            <td>{{ prescription.patient.patient_id if prescription.patient else 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Doctor:</td>
+                            <td>Dr. {{ prescription.doctor.full_name if prescription.doctor else 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Date:</td>
+                            <td>{{ prescription.created_at.strftime('%d %b %Y') }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Status:</td>
+                            <td>
+                                {% if prescription.is_signed %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check"></i> Signed
+                                </span>
+                                {% else %}
+                                <span class="badge bg-warning">Unsigned</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                    
+                    {% if prescription.diagnosis %}
+                    <hr>
+                    <p class="mb-1"><strong>Diagnosis:</strong></p>
+                    <p class="text-muted mb-0">{{ prescription.diagnosis }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Insurance Info -->
+            {% if patient_insurance %}
+            <div class="card mt-3">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="fas fa-shield-alt"></i> Insurance</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>{{ patient_insurance.provider.name if patient_insurance.provider else 'N/A' }}</strong></p>
+                    <p class="mb-1 text-muted">Policy: {{ patient_insurance.policy_number }}</p>
+                    <p class="mb-0">
+                        Coverage: <strong>{{ patient_insurance.coverage_percentage }}%</strong>
+                        {% if patient_insurance.is_valid %}
+                        <span class="badge bg-success ms-2">Active</span>
+                        {% else %}
+                        <span class="badge bg-danger ms-2">Inactive</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Dispense Form -->
+        <div class="col-lg-8">
+            <form method="POST" id="dispenseForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-capsules"></i> Medicines to Dispense</h5>
+                    </div>
+                    <div class="card-body" id="dispenseList">
+                        {% for item in medicines_with_stock %}
+                        <div class="dispense-item" 
+                             data-medicine-id="{{ item.inventory.id if item.inventory else 0 }}"
+                             data-unit-price="{{ item.unit_price }}"
+                             data-available-stock="{{ item.available_stock }}">
+                            <div class="row align-items-center">
+                                <div class="col-md-5">
+                                    <h6 class="mb-1">{{ item.medicine.medicine_name }}</h6>
+                                    <small class="text-muted">
+                                        {{ item.medicine.dosage }} - {{ item.medicine.frequency }}
+                                    </small>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text">Qty</span>
+                                        <input type="number" 
+                                               name="quantity_{{ item.medicine.id }}" 
+                                               class="form-control quantity-input"
+                                               value="{{ item.suggested_quantity }}"
+                                               min="0"
+                                               max="{{ item.available_stock }}"
+                                               {{ 'disabled' if item.available_stock == 0 }}>
+                                    </div>
+                                    <small class="stock-info {{ 'sufficient' if item.available_stock >= item.suggested_quantity else 'insufficient' }}">
+                                        {% if item.available_stock == 0 %}
+                                        <i class="fas fa-times-circle"></i> Out of stock
+                                        {% elif item.available_stock < item.suggested_quantity %}
+                                        <i class="fas fa-exclamation-triangle"></i> Only {{ item.available_stock }} available
+                                        {% else %}
+                                        <i class="fas fa-check-circle"></i> {{ item.available_stock }} available
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <small class="text-muted">₹{{ "%.2f"|format(item.unit_price) }}/unit</small>
+                                </div>
+                                <div class="col-md-2 text-end">
+                                    <strong class="item-total">₹{{ "%.2f"|format(item.unit_price * item.suggested_quantity) }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> No medicines in this prescription.
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Billing Summary -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-calculator"></i> Billing Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <!-- Discount -->
+                                <div class="mb-3">
+                                    <label class="form-label">Discount (₹)</label>
+                                    <input type="number" name="discount" id="discountAmount" 
+                                           class="form-control" value="0" min="0" step="0.01">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Discount Reason</label>
+                                    <input type="text" name="discount_reason" class="form-control" 
+                                           placeholder="e.g., Senior citizen discount">
+                                </div>
+                                
+                                <!-- Insurance -->
+                                {% if patient_insurance and patient_insurance.is_valid %}
+                                <div class="form-check mb-3">
+                                    <input type="checkbox" name="use_insurance" id="useInsurance" 
+                                           class="form-check-input">
+                                    <label class="form-check-label" for="useInsurance">
+                                        Apply Insurance Coverage ({{ patient_insurance.coverage_percentage }}%)
+                                    </label>
+                                </div>
+                                <div id="insuranceDetails" style="display: none;">
+                                    <input type="hidden" id="insuranceCoverage" 
+                                           value="{{ patient_insurance.coverage_percentage }}">
+                                    <p class="text-muted small">
+                                        Provider: {{ patient_insurance.provider.name if patient_insurance.provider else 'N/A' }}<br>
+                                        Policy: {{ patient_insurance.policy_number }}
+                                    </p>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Notes -->
+                                <div class="mb-3">
+                                    <label class="form-label">Notes</label>
+                                    <textarea name="notes" class="form-control" rows="2" 
+                                              placeholder="Any special instructions..."></textarea>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="bg-light rounded p-3">
+                                    <table class="table table-sm table-borderless mb-0">
+                                        <tr>
+                                            <td>Subtotal:</td>
+                                            <td class="text-end" id="subtotalDisplay">₹0.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Discount:</td>
+                                            <td class="text-end text-danger" id="discountDisplay">-₹0.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Tax (5%):</td>
+                                            <td class="text-end" id="taxDisplay">₹0.00</td>
+                                        </tr>
+                                        {% if patient_insurance %}
+                                        <tr id="insuranceRow" style="display: none;">
+                                            <td>Insurance Coverage:</td>
+                                            <td class="text-end text-success" id="insuranceDisplay">-₹0.00</td>
+                                        </tr>
+                                        {% endif %}
+                                        <tr class="border-top">
+                                            <td><strong>Total:</strong></td>
+                                            <td class="text-end"><strong id="totalDisplay">₹0.00</strong></td>
+                                        </tr>
+                                    </table>
+                                    
+                                    <input type="hidden" name="subtotal" id="calculatedSubtotal">
+                                    <input type="hidden" name="tax" id="calculatedTax">
+                                    <input type="hidden" name="total" id="calculatedTotal">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('pharmacy.prescriptions') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-check"></i> Dispense & Generate Bill
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/pharmacy.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize totals on page load
+    updateDispenseTotals();
+    
+    // Insurance row toggle
+    const insuranceCheckbox = document.getElementById('useInsurance');
+    const insuranceRow = document.getElementById('insuranceRow');
+    if (insuranceCheckbox && insuranceRow) {
+        insuranceCheckbox.addEventListener('change', function() {
+            insuranceRow.style.display = this.checked ? 'table-row' : 'none';
+            updateDispenseTotals();
+        });
+    }
+});
+</script>
+{% endblock %}

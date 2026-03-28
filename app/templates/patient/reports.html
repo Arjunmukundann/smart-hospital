@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}My Reports - Smart Hospital{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="fw-bold mb-4">
+        <i class="fas fa-file-medical text-success me-2"></i>My Medical Reports
+    </h2>
+    
+    {% if reports %}
+    <div class="row g-4">
+        {% for report in reports %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="badge bg-{{ 'success' if report.is_analyzed else 'warning' }}">
+                            {{ 'Analyzed' if report.is_analyzed else 'Pending' }}
+                        </span>
+                        <small class="text-muted">{{ report.report_date.strftime('%b %d, %Y') }}</small>
+                    </div>
+                    
+                    <h5 class="card-title">
+                        <i class="fas fa-file-medical-alt text-primary me-2"></i>
+                        {{ report.report_type|replace('_', ' ')|title }}
+                    </h5>
+                    
+                    <p class="card-text small text-muted">
+                        Report ID: <code>{{ report.report_id }}</code>
+                    </p>
+                    
+                    {% if report.is_analyzed and report.summary %}
+                    <p class="card-text small">
+                        {{ report.summary[:100] }}...
+                    </p>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-transparent">
+                    <small class="text-muted">
+                        Uploaded: {{ report.created_at.strftime('%Y-%m-%d') }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-file-medical-alt fa-5x text-muted mb-4"></i>
+        <h4 class="text-muted">No Reports Yet</h4>
+        <p class="text-muted">Your medical reports will appear here after your doctor uploads them.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

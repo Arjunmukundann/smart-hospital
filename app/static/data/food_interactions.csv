@@ -1,0 +1,9 @@
+drug,foods,severity,description,recommendation
+warfarin,spinach;kale;broccoli;green leafy vegetables,medium,Vitamin K in these foods can reduce Warfarin effectiveness,Maintain consistent intake of Vitamin K foods
+tetracycline,milk;dairy;cheese;yogurt;calcium,medium,Calcium reduces absorption of Tetracycline,Take medication 2 hours before/after dairy
+metformin,alcohol;beer;wine;spirits,high,Alcohol increases risk of lactic acidosis with Metformin,Avoid or limit alcohol consumption
+ciprofloxacin,milk;dairy;calcium supplements,medium,Calcium reduces Ciprofloxacin absorption,Take 2 hours before or 6 hours after dairy
+simvastatin,grapefruit;grapefruit juice,high,Grapefruit increases Simvastatin levels significantly,Avoid grapefruit entirely
+levothyroxine,soy;coffee;high-fiber foods,medium,These foods can reduce Levothyroxine absorption,Take medication on empty stomach 30-60 min before food
+mao inhibitors,aged cheese;red wine;soy sauce;fermented foods,critical,Tyramine-rich foods can cause hypertensive crisis,Strictly avoid these foods during treatment
+lisinopril,banana;potato;orange juice;salt substitutes,medium,High potassium foods may cause hyperkalemia,Moderate intake of potassium-rich foods

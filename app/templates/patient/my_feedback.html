@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}My Feedback{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>My Feedback & Ratings</h2>
+    
+    {% if feedbacks %}
+    <div class="row">
+        {% for f in feedbacks %}
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Dr. {{ f.doctor.full_name }}</h5>
+                    <p><strong>Rating:</strong> {{ '★' * f.overall_rating }} ({{ f.overall_rating }}/5)</p>
+                    <p><strong>Date:</strong> {{ f.created_at.strftime('%d %b %Y') }}</p>
+                    {% if f.review %}
+                    <p><em>"{{ f.review }}"</em></p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>You haven't given any feedback yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

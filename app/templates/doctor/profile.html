@@ -1,0 +1,762 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - Doctor Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Profile Container */
+    .profile-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* Profile Header Card */
+    .profile-header-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 30px;
+        color: white;
+        margin-bottom: 25px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-header-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .profile-avatar-section {
+        display: flex;
+        align-items: center;
+        gap: 25px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 4px solid white;
+        object-fit: cover;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .profile-avatar img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .profile-info h2 {
+        margin: 0 0 5px;
+        font-weight: 700;
+        font-size: 1.8rem;
+    }
+
+    .profile-info .specialization {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 10px;
+    }
+
+    .profile-badges {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .profile-badge {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Stats Cards */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+
+    @media (max-width: 992px) {
+        .stats-row {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 576px) {
+        .stats-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .stat-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .stat-icon.patients {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+    }
+
+    .stat-icon.prescriptions {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        color: white;
+    }
+
+    .stat-icon.appointments {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        color: white;
+    }
+
+    .stat-icon.completed {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .stat-content h3 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin: 0;
+        color: #333;
+    }
+
+    .stat-content p {
+        margin: 0;
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    /* Profile Sections */
+    .profile-section {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+        margin-bottom: 25px;
+        overflow: hidden;
+    }
+
+    .section-header {
+        background: #f8f9fa;
+        padding: 18px 25px;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .section-header h5 {
+        margin: 0;
+        font-weight: 600;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-header h5 i {
+        color: #667eea;
+    }
+
+    .section-body {
+        padding: 25px;
+    }
+
+    /* Form Styling */
+    .form-label {
+        font-weight: 500;
+        color: #555;
+        margin-bottom: 8px;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+    }
+
+    .form-control:disabled, .form-control[readonly] {
+        background-color: #f5f5f5;
+        color: #666;
+    }
+
+    /* Profile Picture Upload */
+    .profile-picture-upload {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+
+    .current-picture {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #667eea;
+        background: #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: #999;
+    }
+
+    .current-picture img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .upload-controls {
+        flex: 1;
+    }
+
+    .upload-controls h6 {
+        margin: 0 0 8px;
+        color: #333;
+    }
+
+    .upload-controls p {
+        margin: 0 0 10px;
+        font-size: 0.85rem;
+        color: #666;
+    }
+
+    /* Buttons */
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .btn-outline-custom {
+        border: 2px solid #667eea;
+        color: #667eea;
+        background: transparent;
+        padding: 10px 25px;
+        border-radius: 25px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .btn-outline-custom:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    /* Password Section */
+    .password-section {
+        background: #fff8e1;
+        border-radius: 10px;
+        padding: 20px;
+        border: 1px solid #ffe082;
+    }
+
+    .password-section h6 {
+        color: #f57c00;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Activity Section */
+    .activity-item {
+        display: flex;
+        align-items: flex-start;
+        padding: 15px;
+        border-bottom: 1px solid #f0f0f0;
+        transition: background 0.2s;
+    }
+
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+
+    .activity-item:hover {
+        background: #f8f9fa;
+    }
+
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+
+    .activity-icon.prescription {
+        background: #e8f5e9;
+        color: #4caf50;
+    }
+
+    .activity-icon.appointment {
+        background: #e3f2fd;
+        color: #2196f3;
+    }
+
+    .activity-content {
+        flex: 1;
+    }
+
+    .activity-content h6 {
+        margin: 0 0 3px;
+        font-size: 0.95rem;
+        color: #333;
+    }
+
+    .activity-content p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #666;
+    }
+
+    .activity-time {
+        font-size: 0.8rem;
+        color: #999;
+        white-space: nowrap;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 30px;
+        color: #999;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        opacity: 0.5;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .profile-avatar-section {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .profile-info {
+            text-align: center;
+        }
+
+        .profile-badges {
+            justify-content: center;
+        }
+
+        .profile-picture-upload {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="profile-container">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('doctor.dashboard') }}"><i class="fas fa-home"></i> Dashboard</a>
+                </li>
+                <li class="breadcrumb-item active">My Profile</li>
+            </ol>
+        </nav>
+
+        <!-- Profile Header -->
+        <div class="profile-header-card">
+            <div class="profile-avatar-section">
+                <div class="profile-avatar">
+                    {% if current_user.profile_picture %}
+                        <img src="{{ url_for('static', filename='uploads/profile_pictures/' + current_user.profile_picture) }}" alt="Profile">
+                    {% else %}
+                        <i class="fas fa-user-md"></i>
+                    {% endif %}
+                </div>
+                <div class="profile-info">
+                    <h2>Dr. {{ current_user.first_name }} {{ current_user.last_name }}</h2>
+                    <p class="specialization">
+                        <i class="fas fa-stethoscope me-2"></i>
+                        {{ current_user.specialization or 'General Medicine' }}
+                    </p>
+                    <div class="profile-badges">
+                        <span class="profile-badge">
+                            <i class="fas fa-id-card"></i>
+                            {{ current_user.license_number or 'License N/A' }}
+                        </span>
+                        <span class="profile-badge">
+                            <i class="fas fa-envelope"></i>
+                            {{ current_user.email }}
+                        </span>
+                        {% if current_user.phone %}
+                        <span class="profile-badge">
+                            <i class="fas fa-phone"></i>
+                            {{ current_user.phone }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Row -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon patients">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ total_patients or 0 }}</h3>
+                    <p>Total Patients</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon prescriptions">
+                    <i class="fas fa-prescription"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ total_prescriptions or 0 }}</h3>
+                    <p>Prescriptions</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon appointments">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ total_appointments or 0 }}</h3>
+                    <p>Total Appointments</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon completed">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ completed_appointments or 0 }}</h3>
+                    <p>Completed</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column - Profile Form -->
+            <div class="col-lg-8">
+                <!-- Personal Information -->
+                <div class="profile-section">
+                    <div class="section-header">
+                        <h5><i class="fas fa-user-edit"></i> Personal Information</h5>
+                    </div>
+                    <div class="section-body">
+                        <form action="{{ url_for('doctor.profile') }}" method="POST" enctype="multipart/form-data">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            
+                            <!-- Profile Picture Upload -->
+                            <div class="profile-picture-upload">
+                                <div class="current-picture">
+                                    {% if current_user.profile_picture %}
+                                        <img src="{{ url_for('static', filename='uploads/profile_pictures/' + current_user.profile_picture) }}" alt="Profile">
+                                    {% else %}
+                                        <i class="fas fa-user"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="upload-controls">
+                                    <h6>Profile Picture</h6>
+                                    <p>Upload a professional photo. JPG, PNG or GIF, max 5MB.</p>
+                                    <input type="file" class="form-control form-control-sm" name="profile_picture" accept="image/*">
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">First Name</label>
+                                    <input type="text" class="form-control" name="first_name" 
+                                           value="{{ current_user.first_name }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Last Name</label>
+                                    <input type="text" class="form-control" name="last_name" 
+                                           value="{{ current_user.last_name }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" value="{{ current_user.email }}" 
+                                           disabled readonly>
+                                    <small class="text-muted">Email cannot be changed</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" name="phone" 
+                                           value="{{ current_user.phone or '' }}" 
+                                           placeholder="Enter phone number">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Specialization</label>
+                                    <select class="form-control" name="specialization">
+                                        <option value="">Select Specialization</option>
+                                        <option value="General Medicine" {% if current_user.specialization == 'General Medicine' %}selected{% endif %}>General Medicine</option>
+                                        <option value="Cardiology" {% if current_user.specialization == 'Cardiology' %}selected{% endif %}>Cardiology</option>
+                                        <option value="Neurology" {% if current_user.specialization == 'Neurology' %}selected{% endif %}>Neurology</option>
+                                        <option value="Orthopedics" {% if current_user.specialization == 'Orthopedics' %}selected{% endif %}>Orthopedics</option>
+                                        <option value="Pediatrics" {% if current_user.specialization == 'Pediatrics' %}selected{% endif %}>Pediatrics</option>
+                                        <option value="Dermatology" {% if current_user.specialization == 'Dermatology' %}selected{% endif %}>Dermatology</option>
+                                        <option value="Ophthalmology" {% if current_user.specialization == 'Ophthalmology' %}selected{% endif %}>Ophthalmology</option>
+                                        <option value="ENT" {% if current_user.specialization == 'ENT' %}selected{% endif %}>ENT (Ear, Nose, Throat)</option>
+                                        <option value="Psychiatry" {% if current_user.specialization == 'Psychiatry' %}selected{% endif %}>Psychiatry</option>
+                                        <option value="Gynecology" {% if current_user.specialization == 'Gynecology' %}selected{% endif %}>Gynecology</option>
+                                        <option value="Urology" {% if current_user.specialization == 'Urology' %}selected{% endif %}>Urology</option>
+                                        <option value="Oncology" {% if current_user.specialization == 'Oncology' %}selected{% endif %}>Oncology</option>
+                                        <option value="Radiology" {% if current_user.specialization == 'Radiology' %}selected{% endif %}>Radiology</option>
+                                        <option value="Anesthesiology" {% if current_user.specialization == 'Anesthesiology' %}selected{% endif %}>Anesthesiology</option>
+                                        <option value="Emergency Medicine" {% if current_user.specialization == 'Emergency Medicine' %}selected{% endif %}>Emergency Medicine</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">License Number</label>
+                                    <input type="text" class="form-control" name="license_number" 
+                                           value="{{ current_user.license_number or '' }}" 
+                                           placeholder="Medical license number">
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary-custom">
+                                    <i class="fas fa-save me-2"></i>Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Change Password Section -->
+                <div class="profile-section">
+                    <div class="section-header">
+                        <h5><i class="fas fa-lock"></i> Security Settings</h5>
+                    </div>
+                    <div class="section-body">
+                        <div class="password-section">
+                            <h6><i class="fas fa-key"></i> Change Password</h6>
+                            <form action="{{ url_for('doctor.change_password') }}" method="POST">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <div class="row g-3">
+                                    <div class="col-md-12">
+                                        <label class="form-label">Current Password</label>
+                                        <input type="password" class="form-control" name="current_password" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">New Password</label>
+                                        <input type="password" class="form-control" name="new_password" 
+                                               minlength="8" required>
+                                        <small class="text-muted">Minimum 8 characters</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Confirm New Password</label>
+                                        <input type="password" class="form-control" name="confirm_password" required>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <button type="submit" class="btn btn-outline-custom">
+                                        <i class="fas fa-key me-2"></i>Change Password
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Activity -->
+            <div class="col-lg-4">
+                <!-- Recent Prescriptions -->
+                <div class="profile-section">
+                    <div class="section-header">
+                        <h5><i class="fas fa-prescription"></i> Recent Prescriptions</h5>
+                        <a href="{{ url_for('doctor.prescriptions') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                    <div class="section-body p-0">
+                        {% if recent_prescriptions %}
+                            {% for rx in recent_prescriptions %}
+                            <div class="activity-item">
+                                <div class="activity-icon prescription">
+                                    <i class="fas fa-file-prescription"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h6>{{ rx.prescription_id }}</h6>
+                                    <p>{{ rx.patient.user.first_name }} {{ rx.patient.user.last_name }}</p>
+                                </div>
+                                <div class="activity-time">
+                                    {{ rx.created_at.strftime('%b %d') }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-prescription"></i>
+                                <p>No recent prescriptions</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Recent Appointments -->
+                <div class="profile-section">
+                    <div class="section-header">
+                        <h5><i class="fas fa-calendar-alt"></i> Recent Appointments</h5>
+                        <a href="{{ url_for('doctor.appointments') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                    <div class="section-body p-0">
+                        {% if recent_appointments %}
+                            {% for appt in recent_appointments %}
+                            <div class="activity-item">
+                                <div class="activity-icon appointment">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h6>{{ appt.patient.user.first_name }} {{ appt.patient.user.last_name }}</h6>
+                                    <p>{{ appt.status | capitalize }}</p>
+                                </div>
+                                <div class="activity-time">
+                                    {{ appt.appointment_date.strftime('%b %d') }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-calendar"></i>
+                                <p>No recent appointments</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Account Info -->
+                <div class="profile-section">
+                    <div class="section-header">
+                        <h5><i class="fas fa-info-circle"></i> Account Info</h5>
+                    </div>
+                    <div class="section-body">
+                        <div class="mb-3">
+                            <small class="text-muted">Account Created</small>
+                            <p class="mb-0">{{ current_user.created_at.strftime('%B %d, %Y') if current_user.created_at else 'N/A' }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">Account Status</small>
+                            <p class="mb-0">
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check-circle me-1"></i>Active
+                                </span>
+                            </p>
+                        </div>
+                        <div>
+                            <small class="text-muted">Role</small>
+                            <p class="mb-0">
+                                <span class="badge bg-primary">
+                                    <i class="fas fa-user-md me-1"></i>Doctor
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Preview profile picture before upload
+    document.querySelector('input[name="profile_picture"]').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.querySelector('.current-picture');
+                preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Password confirmation validation
+    document.querySelector('input[name="confirm_password"]').addEventListener('input', function() {
+        const newPass = document.querySelector('input[name="new_password"]').value;
+        const confirmPass = this.value;
+        
+        if (confirmPass && newPass !== confirmPass) {
+            this.setCustomValidity('Passwords do not match');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+</script>
+{% endblock %}

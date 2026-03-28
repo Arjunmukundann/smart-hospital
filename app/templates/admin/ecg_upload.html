@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Upload ECG - Admin{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="d-flex align-items-center mb-4">
+                <a href="{{ url_for('ecg.index') }}" class="btn btn-outline-secondary me-3">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <div>
+                    <h3 class="mb-0">Upload ECG for Analysis</h3>
+                    <p class="text-muted mb-0">Upload a CSV file with ECG signal data</p>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data" id="ecgUploadForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <!-- Patient Information -->
+                        <div class="mb-4">
+                            <h6 class="text-primary border-bottom pb-2 mb-3">
+                                <i class="fas fa-user me-2"></i>Patient Information
+                            </h6>
+                            
+                            <!-- Link to Hospital Patient (Optional) -->
+                            <div class="mb-3">
+                                <label class="form-label">Link to Hospital Patient (Optional)</label>
+                                <select name="hospital_patient_id" class="form-select" id="hospitalPatient">
+                                    <option value="">-- New Patient --</option>
+                                    {% for patient in hospital_patients %}
+                                    <option value="{{ patient.id }}" 
+                                            data-name="{{ patient.full_name }}"
+                                            data-age="{{ patient.age }}"
+                                            data-gender="{{ patient.gender }}">
+                                        {{ patient.patient_id }} - {{ patient.full_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <small class="text-muted">Select existing hospital patient or enter new details below</small>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Patient Name <span class="text-danger">*</span></label>
+                                    <input type="text" name="patient_name" id="patientName" 
+                                           class="form-control" required placeholder="Enter patient name">
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Age <span class="text-danger">*</span></label>
+                                    <input type="number" name="patient_age" id="patientAge" 
+                                           class="form-control" required min="1" max="120" placeholder="Age">
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Gender <span class="text-danger">*</span></label>
+                                    <select name="patient_gender" id="patientGender" class="form-select" required>
+                                        <option value="">Select</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ECG File Upload -->
+                        <div class="mb-4">
+                            <h6 class="text-primary border-bottom pb-2 mb-3">
+                                <i class="fas fa-file-upload me-2"></i>ECG File
+                            </h6>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">ECG Data File <span class="text-danger">*</span></label>
+                                <input type="file" name="ecg_file" class="form-control" required
+                                       accept=".csv,.txt,.dat" id="ecgFile">
+                                <small class="text-muted">
+                                    Supported formats: CSV, TXT, DAT
+                                    <br>Expected: 360 Hz sampling rate (MIT-BIH format)
+                                </small>
+                            </div>
+                            
+                            <!-- File Info -->
+                            <div id="fileInfo" class="alert alert-info d-none">
+                                <i class="fas fa-file me-2"></i>
+                                <span id="fileName"></span>
+                                <span id="fileSize" class="ms-2"></span>
+                            </div>
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="d-flex justify-content-between pt-3 border-top">
+                            <a href="{{ url_for('ecg.index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger" id="analyzeBtn">
+                                <i class="fas fa-heartbeat me-2"></i>Analyze ECG
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Help Card -->
+            <div class="card mt-4 bg-light">
+                <div class="card-body">
+                    <h6><i class="fas fa-question-circle text-info me-2"></i>File Format Guidelines</h6>
+                    <ul class="small text-muted mb-0">
+                        <li>CSV file with ECG voltage values (mV or raw ADC)</li>
+                        <li>Sampling rate: 360 Hz (MIT-BIH standard)</li>
+                        <li>Minimum duration: 1 second (360 samples)</li>
+                        <li>Recommended: 10-30 seconds of recording</li>
+                        <li>Single-lead ECG (Lead II preferred)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-fill from hospital patient
+document.getElementById('hospitalPatient').addEventListener('change', function() {
+    const option = this.options[this.selectedIndex];
+    if (option.value) {
+        document.getElementById('patientName').value = option.dataset.name || '';
+        document.getElementById('patientAge').value = option.dataset.age || '';
+        document.getElementById('patientGender').value = option.dataset.gender || '';
+    }
+});
+
+// Show file info
+document.getElementById('ecgFile').addEventListener('change', function() {
+    const file = this.files[0];
+    if (file) {
+        document.getElementById('fileInfo').classList.remove('d-none');
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileSize').textContent = `(${(file.size / 1024).toFixed(1)} KB)`;
+    } else {
+        document.getElementById('fileInfo').classList.add('d-none');
+    }
+});
+
+// Form submission
+document.getElementById('ecgUploadForm').addEventListener('submit', function() {
+    const btn = document.getElementById('analyzeBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Analyzing...';
+});
+</script>
+{% endblock %}

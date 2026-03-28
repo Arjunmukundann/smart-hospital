@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+
+{% block title %}Manual Report Entry - {{ patient.full_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Patient Info -->
+            <div class="card shadow-sm mb-4 border-primary">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-user-circle fa-3x text-primary me-3"></i>
+                        <div>
+                            <h5 class="mb-0">{{ patient.full_name }}</h5>
+                            <small class="text-muted">{{ patient.patient_id }} | {{ patient.age }} yrs | {{ patient.gender }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-keyboard me-2"></i>Manual Report Entry
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Use this form when OCR doesn't extract values correctly. Enter test values manually for accurate analysis.
+                    </div>
+                    
+                    <form method="POST" action="{{ url_for('doctor.analyze_manual_report', patient_id=patient.id) }}" id="manualForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <!-- Report Type Selection -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Select Report Type</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="report_type" id="typeBlood" value="blood_test" checked>
+                                <label class="btn btn-outline-primary" for="typeBlood">🩸 Blood Test</label>
+                                
+                                <input type="radio" class="btn-check" name="report_type" id="typeThyroid" value="thyroid">
+                                <label class="btn btn-outline-primary" for="typeThyroid">🦋 Thyroid</label>
+                                
+                                <input type="radio" class="btn-check" name="report_type" id="typeLipid" value="lipid">
+                                <label class="btn btn-outline-primary" for="typeLipid">🫀 Lipid Profile</label>
+                                
+                                <input type="radio" class="btn-check" name="report_type" id="typeDiabetes" value="diabetes">
+                                <label class="btn btn-outline-primary" for="typeDiabetes">🍬 Diabetes</label>
+                                
+                                <input type="radio" class="btn-check" name="report_type" id="typeKidney" value="kidney">
+                                <label class="btn btn-outline-primary" for="typeKidney">💧 Kidney</label>
+                                
+                                <input type="radio" class="btn-check" name="report_type" id="typeLiver" value="liver">
+                                <label class="btn btn-outline-primary" for="typeLiver">🫁 Liver</label>
+                            </div>
+                        </div>
+                        
+                        <!-- Test Values Section -->
+                        <div id="testValuesSection">
+                            <!-- Blood Test Fields -->
+                            <div class="test-group" id="blood_test_fields">
+                                <h5 class="text-primary mb-3"><i class="fas fa-tint me-2"></i>Complete Blood Count (CBC)</h5>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Hemoglobin (g/dL)</label>
+                                        <input type="number" step="0.1" class="form-control" name="hemoglobin" placeholder="e.g., 12.5">
+                                        <small class="text-muted">Normal: M: 13-17, F: 12-15.5</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">WBC (/µL)</label>
+                                        <input type="number" class="form-control" name="wbc" placeholder="e.g., 7500">
+                                        <small class="text-muted">Normal: 4000-11000</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">RBC (million/µL)</label>
+                                        <input type="number" step="0.1" class="form-control" name="rbc" placeholder="e.g., 4.8">
+                                        <small class="text-muted">Normal: M: 4.5-5.5, F: 4.0-5.0</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Platelets (/µL)</label>
+                                        <input type="number" class="form-control" name="platelets" placeholder="e.g., 250000">
+                                        <small class="text-muted">Normal: 150000-400000</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">PCV/Hematocrit (%)</label>
+                                        <input type="number" step="0.1" class="form-control" name="pcv" placeholder="e.g., 42">
+                                        <small class="text-muted">Normal: M: 40-50, F: 36-44</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">ESR (mm/hr)</label>
+                                        <input type="number" class="form-control" name="esr" placeholder="e.g., 10">
+                                        <small class="text-muted">Normal: M: 0-15, F: 0-20</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Thyroid Fields -->
+                            <div class="test-group d-none" id="thyroid_fields">
+                                <h5 class="text-primary mb-3"><i class="fas fa-disease me-2"></i>Thyroid Function Test</h5>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">TSH (mIU/L) *</label>
+                                        <input type="number" step="0.01" class="form-control" name="tsh" placeholder="e.g., 2.5">
+                                        <small class="text-muted">Normal: 0.4-4.0</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">T3 (ng/dL)</label>
+                                        <input type="number" step="0.1" class="form-control" name="t3" placeholder="e.g., 120">
+                                        <small class="text-muted">Normal: 80-200</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">T4 (µg/dL)</label>
+                                        <input type="number" step="0.1" class="form-control" name="t4" placeholder="e.g., 7.5">
+                                        <small class="text-muted">Normal: 5.0-12.0</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Free T3 (pg/mL)</label>
+                                        <input type="number" step="0.1" class="form-control" name="free_t3" placeholder="e.g., 3.2">
+                                        <small class="text-muted">Normal: 2.3-4.2</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Free T4 (ng/dL)</label>
+                                        <input type="number" step="0.01" class="form-control" name="free_t4" placeholder="e.g., 1.2">
+                                        <small class="text-muted">Normal: 0.8-1.8</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Lipid Profile Fields -->
+                            <div class="test-group d-none" id="lipid_fields">
+                                <h5 class="text-primary mb-3"><i class="fas fa-heart me-2"></i>Lipid Profile</h5>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Total Cholesterol (mg/dL)</label>
+                                        <input type="number" class="form-control" name="total_cholesterol" placeholder="e.g., 180">
+                                        <small class="text-muted">Normal: &lt;200</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">LDL (mg/dL)</label>
+                                        <input type="number" class="form-control" name="ldl" placeholder="e.g., 100">
+                                        <small class="text-muted">Normal: &lt;100</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">HDL (mg/dL)</label>
+                                        <input type="number" class="form-control" name="hdl" placeholder="e.g., 50">
+                                        <small class="text-muted">Normal: M: 40-60, F: 50-60</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Triglycerides (mg/dL)</label>
+                                        <input type="number" class="form-control" name="triglycerides" placeholder="e.g., 120">
+                                        <small class="text-muted">Normal: &lt;150</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">VLDL (mg/dL)</label>
+                                        <input type="number" class="form-control" name="vldl" placeholder="e.g., 25">
+                                        <small class="text-muted">Normal: 5-40</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Diabetes Fields -->
+                            <div class="test-group d-none" id="diabetes_fields">
+                                <h5 class="text-primary mb-3"><i class="fas fa-cookie me-2"></i>Diabetes Panel</h5>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Fasting Glucose (mg/dL)</label>
+                                        <input type="number" class="form-control" name="fasting_glucose" placeholder="e.g., 95">
+                                        <small class="text-muted">Normal: 70-100, Prediabetes: 100-125, Diabetes: ≥126</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">PP Glucose (mg/dL)</label>
+                                        <input type="number" class="form-control" name="post_prandial_glucose" placeholder="e.g., 130">
+                                        <small class="text-muted">Normal: 70-140, Diabetes: ≥200</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">HbA1c (%)</label>
+                                        <input type="number" step="0.1" class="form-control" name="hba1c" placeholder="e.g., 5.5">
+                                        <small class="text-muted">Normal: &lt;5.7, Prediabetes: 5.7-6.4, Diabetes: ≥6.5</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Kidney Fields -->
+                            <div class="test-group d-none" id="kidney_fields">
+                                <h5 class="text-primary mb-3"><i class="fas fa-kidneys me-2"></i>Kidney Function Test</h5>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Creatinine (mg/dL)</label>
+                                        <input type="number" step="0.1" class="form-control" name="creatinine" placeholder="e.g., 1.0">
+                                        <small class="text-muted">Normal: M: 0.7-1.3, F: 0.6-1.1</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Urea (mg/dL)</label>
+                                        <input type="number" class="form-control" name="urea" placeholder="e.g., 25">
+                                        <small class="text-muted">Normal: 15-40</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Uric Acid (mg/dL)</label>
+                                        <input type="number" step="0.1" class="form-control" name="uric_acid" placeholder="e.g., 5.5">
+                                        <small class="text-muted">Normal: M: 3.5-7.2, F: 2.5-6.0</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Sodium (mEq/L)</label>
+                                        <input type="number" class="form-control" name="sodium" placeholder="e.g., 140">
+                                        <small class="text-muted">Normal: 136-145</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Potassium (mEq/L)</label>
+                                        <input type="number" step="0.1" class="form-control" name="potassium" placeholder="e.g., 4.2">
+                                        <small class="text-muted">Normal: 3.5-5.0</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Liver Fields -->
+                            <div class="test-group d-none" id="liver_fields">
+                                <h5 class="text-primary mb-3"><i class="fas fa-lungs me-2"></i>Liver Function Test</h5>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">SGPT/ALT (U/L)</label>
+                                        <input type="number" class="form-control" name="sgpt" placeholder="e.g., 30">
+                                        <small class="text-muted">Normal: 7-56</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">SGOT/AST (U/L)</label>
+                                        <input type="number" class="form-control" name="sgot" placeholder="e.g., 25">
+                                        <small class="text-muted">Normal: 10-40</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">ALP (U/L)</label>
+                                        <input type="number" class="form-control" name="alp" placeholder="e.g., 80">
+                                        <small class="text-muted">Normal: 44-147</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Total Bilirubin (mg/dL)</label>
+                                        <input type="number" step="0.1" class="form-control" name="bilirubin_total" placeholder="e.g., 0.8">
+                                        <small class="text-muted">Normal: 0.1-1.2</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Albumin (g/dL)</label>
+                                        <input type="number" step="0.1" class="form-control" name="albumin" placeholder="e.g., 4.2">
+                                        <small class="text-muted">Normal: 3.5-5.0</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Total Protein (g/dL)</label>
+                                        <input type="number" step="0.1" class="form-control" name="total_protein" placeholder="e.g., 7.0">
+                                        <small class="text-muted">Normal: 6.0-8.3</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Report Date -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Report Date</label>
+                            <input type="date" class="form-control" name="report_date" value="{{ today.strftime('%Y-%m-%d') if today else '' }}">
+                        </div>
+                        
+                        <!-- Notes -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Additional Notes</label>
+                            <textarea class="form-control" name="notes" rows="2" placeholder="Any additional observations..."></textarea>
+                        </div>
+                        
+                        <!-- Buttons -->
+                        <div class="d-flex gap-3">
+                            <a href="{{ url_for('doctor.patient_detail', patient_id=patient.id) }}" class="btn btn-outline-secondary btn-lg flex-grow-1">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg flex-grow-1">
+                                <i class="fas fa-chart-line me-2"></i>Analyze Report
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const reportTypes = document.querySelectorAll('input[name="report_type"]');
+    const testGroups = document.querySelectorAll('.test-group');
+    
+    reportTypes.forEach(radio => {
+        radio.addEventListener('change', function() {
+            // Hide all groups
+            testGroups.forEach(group => group.classList.add('d-none'));
+            
+            // Show selected group
+            const selectedType = this.value;
+            const fieldsMap = {
+                'blood_test': 'blood_test_fields',
+                'thyroid': 'thyroid_fields',
+                'lipid': 'lipid_fields',
+                'diabetes': 'diabetes_fields',
+                'kidney': 'kidney_fields',
+                'liver': 'liver_fields'
+            };
+            
+            const targetId = fieldsMap[selectedType];
+            if (targetId) {
+                document.getElementById(targetId).classList.remove('d-none');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,118 @@
+{
+    "providers": [
+        {
+            "id": 1,
+            "name": "Medicare",
+            "code": "MEDICARE",
+            "logo": "medicare-logo.png",
+            "contact_phone": "1-800-MEDICARE",
+            "contact_email": "support@medicare.gov",
+            "website": "https://www.medicare.gov",
+            "coverage_types": ["hospitalization", "outpatient", "prescription", "preventive"],
+            "plan_types": ["Part A", "Part B", "Part C", "Part D"],
+            "is_active": true
+        },
+        {
+            "id": 2,
+            "name": "Blue Cross Blue Shield",
+            "code": "BCBS",
+            "logo": "bcbs-logo.png",
+            "contact_phone": "1-800-123-4567",
+            "contact_email": "support@bcbs.com",
+            "website": "https://www.bcbs.com",
+            "coverage_types": ["hospitalization", "outpatient", "prescription", "dental", "vision"],
+            "plan_types": ["HMO", "PPO", "EPO", "POS"],
+            "is_active": true
+        },
+        {
+            "id": 3,
+            "name": "Aetna",
+            "code": "AETNA",
+            "logo": "aetna-logo.png",
+            "contact_phone": "1-800-872-3862",
+            "contact_email": "support@aetna.com",
+            "website": "https://www.aetna.com",
+            "coverage_types": ["hospitalization", "outpatient", "prescription", "mental_health"],
+            "plan_types": ["HMO", "PPO", "POS"],
+            "is_active": true
+        },
+        {
+            "id": 4,
+            "name": "United Healthcare",
+            "code": "UHC",
+            "logo": "uhc-logo.png",
+            "contact_phone": "1-800-328-5979",
+            "contact_email": "support@uhc.com",
+            "website": "https://www.uhc.com",
+            "coverage_types": ["hospitalization", "outpatient", "prescription", "wellness"],
+            "plan_types": ["HMO", "PPO", "EPO", "HDHP"],
+            "is_active": true
+        },
+        {
+            "id": 5,
+            "name": "Cigna",
+            "code": "CIGNA",
+            "logo": "cigna-logo.png",
+            "contact_phone": "1-800-997-1654",
+            "contact_email": "support@cigna.com",
+            "website": "https://www.cigna.com",
+            "coverage_types": ["hospitalization", "outpatient", "prescription", "behavioral"],
+            "plan_types": ["HMO", "PPO", "OAP"],
+            "is_active": true
+        },
+        {
+            "id": 6,
+            "name": "Humana",
+            "code": "HUMANA",
+            "logo": "humana-logo.png",
+            "contact_phone": "1-800-457-4708",
+            "contact_email": "support@humana.com",
+            "website": "https://www.humana.com",
+            "coverage_types": ["hospitalization", "outpatient", "prescription", "dental"],
+            "plan_types": ["HMO", "PPO", "Medicare Advantage"],
+            "is_active": true
+        },
+        {
+            "id": 7,
+            "name": "Kaiser Permanente",
+            "code": "KAISER",
+            "logo": "kaiser-logo.png",
+            "contact_phone": "1-800-464-4000",
+            "contact_email": "support@kaiserpermanente.org",
+            "website": "https://www.kaiserpermanente.org",
+            "coverage_types": ["hospitalization", "outpatient", "prescription", "preventive"],
+            "plan_types": ["HMO"],
+            "is_active": true
+        },
+        {
+            "id": 8,
+            "name": "Star Health Insurance",
+            "code": "STAR",
+            "logo": "star-logo.png",
+            "contact_phone": "1800-425-2255",
+            "contact_email": "support@starhealth.in",
+            "website": "https://www.starhealth.in",
+            "coverage_types": ["hospitalization", "outpatient", "critical_illness"],
+            "plan_types": ["Individual", "Family Floater", "Senior Citizen"],
+            "is_active": true
+        }
+    ],
+    "coverage_descriptions": {
+        "hospitalization": "Covers inpatient hospital stays, surgeries, and related expenses",
+        "outpatient": "Covers doctor visits, diagnostic tests, and procedures without hospitalization",
+        "prescription": "Covers prescription medications and pharmacy expenses",
+        "dental": "Covers dental procedures, cleanings, and orthodontics",
+        "vision": "Covers eye exams, glasses, and contact lenses",
+        "mental_health": "Covers therapy, counseling, and psychiatric care",
+        "preventive": "Covers wellness visits, vaccinations, and screenings",
+        "wellness": "Covers gym memberships, nutrition counseling, and wellness programs",
+        "critical_illness": "Covers major illnesses like cancer, heart attack, stroke"
+    },
+    "plan_descriptions": {
+        "HMO": "Health Maintenance Organization - Requires primary care physician referrals",
+        "PPO": "Preferred Provider Organization - More flexibility in choosing providers",
+        "EPO": "Exclusive Provider Organization - No out-of-network coverage except emergencies",
+        "POS": "Point of Service - Hybrid of HMO and PPO",
+        "HDHP": "High Deductible Health Plan - Lower premiums, higher deductibles"
+    }
+}

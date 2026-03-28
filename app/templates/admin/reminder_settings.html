@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Reminder Settings - Admin{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-bell me-2"></i>Global Reminder Settings (Admin)</h4>
+                </div>
+                <div class="card-body">
+                    
+                    <!-- Email Status -->
+                    <div class="alert alert-{{ 'success' if email_configured else 'warning' }} mb-4">
+                        {% if email_configured %}
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Email Configured</strong> - Reminders can be sent
+                        {% else %}
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Email Not Configured</strong>
+                        <p class="mb-0 small">Add MAIL_USERNAME and MAIL_PASSWORD to .env file</p>
+                        {% endif %}
+                    </div>
+                    
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <h5><i class="fas fa-clock me-2"></i>Default Reminder Times</h5>
+                        <p class="text-muted small">These are the default times when reminders are sent to patients.</p>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-3 mb-3">
+                                <label>🌅 Morning</label>
+                                <input type="time" name="morning_time" class="form-control" 
+                                       value="{{ settings.morning_time }}">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label>☀️ Afternoon</label>
+                                <input type="time" name="afternoon_time" class="form-control" 
+                                       value="{{ settings.afternoon_time }}">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label>🌆 Evening</label>
+                                <input type="time" name="evening_time" class="form-control" 
+                                       value="{{ settings.evening_time }}">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label>🌙 Night</label>
+                                <input type="time" name="night_time" class="form-control" 
+                                       value="{{ settings.night_time }}">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-save me-2"></i>Save Settings
+                        </button>
+                    </form>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- How It Works -->
+                    <h5><i class="fas fa-info-circle me-2"></i>How Email Reminders Work</h5>
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <ol class="mb-0">
+                                <li><strong>Doctor prescribes medicine</strong> with timing (morning/afternoon/evening/night)</li>
+                                <li><strong>Patient enables reminders</strong> in their Settings and enters email</li>
+                                <li><strong>System sends email</strong> at the configured times</li>
+                                <li><strong>Patient receives email</strong> with medicine list and instructions</li>
+                            </ol>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- Test Email -->
+                    <h5><i class="fas fa-vial me-2"></i>Test Email Configuration</h5>
+                    <a href="{{ url_for('api.test_email') }}" class="btn btn-outline-success">
+                        <i class="fas fa-paper-plane me-2"></i>Send Test Email to My Address
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

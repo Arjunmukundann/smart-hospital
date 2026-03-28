@@ -1,0 +1,479 @@
+{% extends "base.html" %}
+
+{% block title %}Add Medicine - Pharmacy{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1">
+                        <i class="fas fa-plus-circle text-primary me-2"></i>Add New Medicine
+                    </h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item">
+                                <a href="{{ url_for('pharmacy.dashboard') }}">Pharmacy</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="{{ url_for('pharmacy.inventory') }}">Inventory</a>
+                            </li>
+                            <li class="breadcrumb-item active">Add Medicine</li>
+                        </ol>
+                    </nav>
+                </div>
+                <a href="{{ url_for('pharmacy.inventory') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Inventory
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-{{ 'exclamation-circle' if category == 'error' else 'check-circle' }} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Add Medicine Form -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-pills me-2"></i>Medicine Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('pharmacy.add_medicine') }}" id="addMedicineForm">
+                        
+                        <!-- Basic Information -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted border-bottom pb-2 mb-3">
+                                    <i class="fas fa-info-circle me-2"></i>Basic Information
+                                </h6>
+                            </div>
+                            
+                            <!-- Medicine Name -->
+                            <div class="col-md-6 mb-3">
+                                <label for="medicine_name" class="form-label">
+                                    Medicine Name <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="medicine_name" 
+                                       name="medicine_name" 
+                                       placeholder="e.g., Paracetamol 500mg"
+                                       required
+                                       autofocus>
+                                <div class="form-text">Enter the brand or commercial name</div>
+                            </div>
+                            
+                            <!-- Generic Name -->
+                            <div class="col-md-6 mb-3">
+                                <label for="generic_name" class="form-label">
+                                    Generic Name
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="generic_name" 
+                                       name="generic_name" 
+                                       placeholder="e.g., Acetaminophen">
+                                <div class="form-text">Enter the generic/chemical name</div>
+                            </div>
+                            
+                            <!-- Category -->
+                            <div class="col-md-6 mb-3">
+                                <label for="category" class="form-label">
+                                    Category
+                                </label>
+                                <select class="form-select" id="category" name="category">
+                                    <option value="">-- Select Category --</option>
+                                    <option value="Analgesics">💊 Analgesics (Pain Relievers)</option>
+                                    <option value="Antibiotics">🦠 Antibiotics</option>
+                                    <option value="Antivirals">🧬 Antivirals</option>
+                                    <option value="Antifungals">🍄 Antifungals</option>
+                                    <option value="Antiseptics">🧴 Antiseptics</option>
+                                    <option value="Cardiovascular">❤️ Cardiovascular</option>
+                                    <option value="Diabetes">🩸 Diabetes</option>
+                                    <option value="Respiratory">🫁 Respiratory</option>
+                                    <option value="Gastrointestinal">🧬 Gastrointestinal</option>
+                                    <option value="Dermatology">🧑 Dermatology</option>
+                                    <option value="Vitamins">💪 Vitamins & Supplements</option>
+                                    <option value="Hormones">⚗️ Hormones</option>
+                                    <option value="Psychiatric">🧠 Psychiatric</option>
+                                    <option value="Ophthalmic">👁️ Ophthalmic (Eye)</option>
+                                    <option value="ENT">👂 ENT (Ear, Nose, Throat)</option>
+                                    <option value="Others">📦 Others</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Manufacturer -->
+                            <div class="col-md-6 mb-3">
+                                <label for="manufacturer" class="form-label">
+                                    Manufacturer
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="manufacturer" 
+                                       name="manufacturer" 
+                                       placeholder="e.g., Sun Pharma, Cipla">
+                            </div>
+                        </div>
+
+                        <!-- Stock Information -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted border-bottom pb-2 mb-3">
+                                    <i class="fas fa-boxes me-2"></i>Stock Information
+                                </h6>
+                            </div>
+                            
+                            <!-- Current Stock -->
+                            <div class="col-md-4 mb-3">
+                                <label for="current_stock" class="form-label">
+                                    Initial Stock Quantity <span class="text-danger">*</span>
+                                </label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="current_stock" 
+                                       name="current_stock" 
+                                       placeholder="0"
+                                       min="0"
+                                       value="0"
+                                       required>
+                            </div>
+                            
+                            <!-- Reorder Level -->
+                            <div class="col-md-4 mb-3">
+                                <label for="reorder_level" class="form-label">
+                                    Reorder Level
+                                </label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="reorder_level" 
+                                       name="reorder_level" 
+                                       placeholder="50"
+                                       min="0"
+                                       value="50">
+                                <div class="form-text">Alert when stock falls below this</div>
+                            </div>
+                            
+                            <!-- Unit -->
+                            <div class="col-md-4 mb-3">
+                                <label for="unit" class="form-label">
+                                    Unit of Measurement
+                                </label>
+                                <select class="form-select" id="unit" name="unit">
+                                    <option value="tablets" selected>Tablets</option>
+                                    <option value="capsules">Capsules</option>
+                                    <option value="bottles">Bottles</option>
+                                    <option value="vials">Vials</option>
+                                    <option value="ampoules">Ampoules</option>
+                                    <option value="strips">Strips</option>
+                                    <option value="boxes">Boxes</option>
+                                    <option value="tubes">Tubes</option>
+                                    <option value="sachets">Sachets</option>
+                                    <option value="ml">Milliliters (ml)</option>
+                                    <option value="grams">Grams</option>
+                                    <option value="units">Units</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Pricing & Batch Information -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted border-bottom pb-2 mb-3">
+                                    <i class="fas fa-tags me-2"></i>Pricing & Batch Information
+                                </h6>
+                            </div>
+                            
+                            <!-- Unit Price -->
+                            <div class="col-md-4 mb-3">
+                                <label for="unit_price" class="form-label">
+                                    Unit Price (₹) <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="unit_price" 
+                                           name="unit_price" 
+                                           placeholder="0.00"
+                                           step="0.01"
+                                           min="0"
+                                           value="0"
+                                           required>
+                                </div>
+                            </div>
+                            
+                            <!-- Batch Number -->
+                            <div class="col-md-4 mb-3">
+                                <label for="batch_number" class="form-label">
+                                    Batch Number
+                                </label>
+                                <div class="input-group">
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="batch_number" 
+                                           name="batch_number" 
+                                           placeholder="e.g., BTH2024001">
+                                    <button type="button" class="btn btn-outline-secondary" id="generateBatch" title="Auto-generate">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Expiry Date -->
+                            <div class="col-md-4 mb-3">
+                                <label for="expiry_date" class="form-label">
+                                    Expiry Date <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" 
+                                       class="form-control" 
+                                       id="expiry_date" 
+                                       name="expiry_date"
+                                       required>
+                                <div class="form-text" id="expiryWarning"></div>
+                            </div>
+                        </div>
+
+                        <!-- Stock Value Preview -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="alert alert-info d-flex align-items-center">
+                                    <i class="fas fa-calculator me-3 fa-2x"></i>
+                                    <div>
+                                        <strong>Total Stock Value:</strong>
+                                        <span id="stockValue" class="fs-5 ms-2">₹ 0.00</span>
+                                        <br>
+                                        <small class="text-muted">
+                                            <span id="stockQty">0</span> <span id="stockUnit">tablets</span> × 
+                                            ₹<span id="stockPrice">0.00</span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="row">
+                            <div class="col-12">
+                                <hr>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button type="reset" class="btn btn-outline-secondary">
+                                        <i class="fas fa-undo me-2"></i>Reset Form
+                                    </button>
+                                    <a href="{{ url_for('pharmacy.inventory') }}" class="btn btn-secondary">
+                                        <i class="fas fa-times me-2"></i>Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-plus-circle me-2"></i>Add Medicine
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Side Panel - Quick Tips -->
+        <div class="col-lg-4">
+            <!-- Quick Tips Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>Quick Tips
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>Medicine Name:</strong> Use the exact brand name as on packaging
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>Generic Name:</strong> Helps in searching alternatives
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>Reorder Level:</strong> Set based on daily usage
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>Batch Number:</strong> Important for tracking & recalls
+                        </li>
+                        <li class="mb-0">
+                            <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                            <strong>Expiry Date:</strong> Must be a future date
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Recent Additions Card -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i>Quick Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('pharmacy.inventory') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-warehouse me-2"></i>View Inventory
+                        </a>
+                        <a href="{{ url_for('pharmacy.prescriptions') }}" class="btn btn-outline-success">
+                            <i class="fas fa-prescription me-2"></i>Pending Prescriptions
+                        </a>
+                        <a href="{{ url_for('pharmacy.reports') }}" class="btn btn-outline-info">
+                            <i class="fas fa-chart-bar me-2"></i>View Reports
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('addMedicineForm');
+    const currentStockInput = document.getElementById('current_stock');
+    const unitPriceInput = document.getElementById('unit_price');
+    const unitSelect = document.getElementById('unit');
+    const expiryDateInput = document.getElementById('expiry_date');
+    const batchNumberInput = document.getElementById('batch_number');
+    const generateBatchBtn = document.getElementById('generateBatch');
+    
+    // Set minimum expiry date to today
+    const today = new Date().toISOString().split('T')[0];
+    expiryDateInput.setAttribute('min', today);
+    
+    // Calculate stock value
+    function calculateStockValue() {
+        const quantity = parseFloat(currentStockInput.value) || 0;
+        const price = parseFloat(unitPriceInput.value) || 0;
+        const unit = unitSelect.value;
+        const total = quantity * price;
+        
+        document.getElementById('stockValue').textContent = '₹ ' + total.toFixed(2);
+        document.getElementById('stockQty').textContent = quantity;
+        document.getElementById('stockUnit').textContent = unit;
+        document.getElementById('stockPrice').textContent = price.toFixed(2);
+    }
+    
+    currentStockInput.addEventListener('input', calculateStockValue);
+    unitPriceInput.addEventListener('input', calculateStockValue);
+    unitSelect.addEventListener('change', calculateStockValue);
+    
+    // Generate batch number
+    generateBatchBtn.addEventListener('click', function() {
+        const date = new Date();
+        const batch = 'BTH' + 
+                     date.getFullYear() + 
+                     String(date.getMonth() + 1).padStart(2, '0') +
+                     String(date.getDate()).padStart(2, '0') +
+                     String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+        batchNumberInput.value = batch;
+    });
+    
+    // Auto-generate batch number on focus if empty
+    batchNumberInput.addEventListener('focus', function() {
+        if (!this.value) {
+            generateBatchBtn.click();
+        }
+    });
+    
+    // Check expiry date
+    expiryDateInput.addEventListener('change', function() {
+        const selectedDate = new Date(this.value);
+        const today = new Date();
+        const warningElement = document.getElementById('expiryWarning');
+        
+        today.setHours(0, 0, 0, 0);
+        
+        if (selectedDate <= today) {
+            warningElement.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>Expiry date must be in the future!</span>';
+            this.classList.add('is-invalid');
+        } else {
+            // Calculate days until expiry
+            const diffTime = selectedDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays <= 30) {
+                warningElement.innerHTML = '<span class="text-warning"><i class="fas fa-exclamation-circle me-1"></i>Expires in ' + diffDays + ' days!</span>';
+            } else if (diffDays <= 90) {
+                warningElement.innerHTML = '<span class="text-info"><i class="fas fa-info-circle me-1"></i>Expires in ' + diffDays + ' days</span>';
+            } else {
+                warningElement.innerHTML = '<span class="text-success"><i class="fas fa-check-circle me-1"></i>Valid for ' + diffDays + ' days</span>';
+            }
+            this.classList.remove('is-invalid');
+        }
+    });
+    
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        const medicineName = document.getElementById('medicine_name').value.trim();
+        const expiryDate = new Date(expiryDateInput.value);
+        const today = new Date();
+        const unitPrice = parseFloat(unitPriceInput.value);
+        
+        today.setHours(0, 0, 0, 0);
+        
+        // Check medicine name
+        if (!medicineName) {
+            e.preventDefault();
+            alert('⚠️ Medicine name is required!');
+            document.getElementById('medicine_name').focus();
+            return false;
+        }
+        
+        // Check expiry date
+        if (expiryDate <= today) {
+            e.preventDefault();
+            alert('⚠️ Expiry date must be in the future!');
+            expiryDateInput.focus();
+            return false;
+        }
+        
+        // Check unit price
+        if (unitPrice < 0) {
+            e.preventDefault();
+            alert('⚠️ Unit price cannot be negative!');
+            unitPriceInput.focus();
+            return false;
+        }
+        
+        // Confirm if adding medicine with low stock
+        const currentStock = parseInt(currentStockInput.value) || 0;
+        const reorderLevel = parseInt(document.getElementById('reorder_level').value) || 50;
+        
+        if (currentStock > 0 && currentStock <= reorderLevel) {
+            if (!confirm('⚠️ Initial stock (' + currentStock + ') is at or below reorder level (' + reorderLevel + '). Continue?')) {
+                e.preventDefault();
+                return false;
+            }
+        }
+    });
+    
+    // Initialize calculations
+    calculateStockValue();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Inventory - Pharmacy{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-boxes text-primary me-2"></i>Medicine Inventory</h2>
+            <p class="text-muted mb-0">Manage medicine stock</p>
+        </div>
+        <div>
+            <a href="{{ url_for('pharmacy.add_medicine') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i> Add Medicine
+            </a>
+            <a href="{{ url_for('pharmacy.dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Search</label>
+                    <input type="text" name="search" class="form-control" 
+                           placeholder="Medicine name..." value="{{ search|default('') }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Category</label>
+                    <select name="category" class="form-select">
+                        <option value="">All Categories</option>
+                        {% for cat in categories|default([]) %}
+                        <option value="{{ cat }}" {{ 'selected' if current_category == cat }}>{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Stock Status</label>
+                    <select name="stock" class="form-select">
+                        <option value="">All</option>
+                        <option value="low" {{ 'selected' if stock_filter == 'low' }}>Low Stock</option>
+                        <option value="out" {{ 'selected' if stock_filter == 'out' }}>Out of Stock</option>
+                        <option value="expired" {{ 'selected' if stock_filter == 'expired' }}>Expired</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Inventory Table -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            {% if medicines.items %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Medicine</th>
+                            <th>Category</th>
+                            <th>Stock</th>
+                            <th>Unit Price</th>
+                            <th>Expiry</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for med in medicines.items %}
+                        <tr class="{{ 'table-danger' if med.current_stock <= 0 else 'table-warning' if med.current_stock <= med.reorder_level else '' }}">
+                            <td>
+                                <strong>{{ med.medicine_name }}</strong>
+                                {% if med.generic_name %}
+                                <br><small class="text-muted">{{ med.generic_name }}</small>
+                                {% endif %}
+                            </td>
+                            <td>{{ med.category or '-' }}</td>
+                            <td>
+                                <span class="badge {{ 'bg-danger' if med.current_stock <= 0 else 'bg-warning' if med.current_stock <= med.reorder_level else 'bg-success' }}">
+                                    {{ med.current_stock }} {{ med.unit }}
+                                </span>
+                            </td>
+                            <td>₹{{ "%.2f"|format(med.unit_price or 0) }}</td>
+                            <td>
+                                {% if med.expiry_date %}
+                                    {{ med.expiry_date.strftime('%d %b %Y') }}
+                                    {% if med.expiry_date < today %}
+                                    <br><span class="badge bg-danger">Expired</span>
+                                    {% endif %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if med.current_stock <= 0 %}
+                                <span class="badge bg-danger">Out of Stock</span>
+                                {% elif med.current_stock <= med.reorder_level %}
+                                <span class="badge bg-warning">Low Stock</span>
+                                {% else %}
+                                <span class="badge bg-success">In Stock</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-success" onclick="showAddStockModal({{ med.id }}, '{{ med.medicine_name }}')">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                    <a href="{{ url_for('pharmacy.edit_medicine', medicine_id=med.id) }}" class="btn btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if medicines.pages > 1 %}
+            <div class="card-footer">
+                <nav>
+                    <ul class="pagination justify-content-center mb-0">
+                        {% for page in medicines.iter_pages() %}
+                            {% if page %}
+                            <li class="page-item {{ 'active' if page == medicines.page }}">
+                                <a class="page-link" href="{{ url_for('pharmacy.inventory', page=page, search=search, category=current_category, stock=stock_filter) }}">{{ page }}</a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-boxes fa-4x text-muted mb-3"></i>
+                <h5>No Medicines Found</h5>
+                <p class="text-muted">No medicines match your search criteria.</p>
+                <a href="{{ url_for('pharmacy.add_medicine') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i> Add Medicine
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Add Stock Modal -->
+<div class="modal fade" id="addStockModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Stock</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addStockForm" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="add">
+                <div class="modal-body">
+                    <p>Medicine: <strong id="stockMedicineName"></strong></p>
+                    <div class="mb-3">
+                        <label class="form-label">Quantity to Add</label>
+                        <input type="number" name="quantity" class="form-control" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Batch Number (Optional)</label>
+                        <input type="text" name="batch_number" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Add Stock</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function showAddStockModal(medicineId, medicineName) {
+    document.getElementById('stockMedicineName').textContent = medicineName;
+    document.getElementById('addStockForm').action = '/pharmacy/medicine/' + medicineId + '/stock';
+    new bootstrap.Modal(document.getElementById('addStockModal')).show();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,42 @@
+<!-- app/templates/appointment/appointment_detail.html -->
+{% extends "base.html" %}
+{% block title %}Appointment Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-success text-white">
+            <h3>Appointment #{{ appointment.appointment_id }}</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Doctor:</strong> Dr. {{ appointment.doctor.full_name }} ({{ appointment.doctor.specialization }})</p>
+                    <p><strong>Date:</strong> {{ appointment.appointment_date.strftime('%d %B %Y') }}</p>
+                    <p><strong>Time:</strong> {{ appointment.appointment_time.strftime('%I:%M %p') }}</p>
+                    <p><strong>Token No:</strong> <span class="badge bg-primary fs-5">#{{ appointment.token_no }}</span></p>
+                    <p><strong>Status:</strong> 
+                        <span class="badge bg-{{ 'success' if appointment.status == 'completed' else 'warning' }}">
+                            {{ appointment.status.capitalize() }}
+                        </span>
+                    </p>
+                </div>
+                <div class="col-md-6 text-end">
+                    {% if appointment.meeting_link and appointment.status == 'scheduled' %}
+                    <a href="{{ url_for('appointment.join_call', appointment_id=appointment.id) }}" 
+                       class="btn btn-success btn-lg">
+                        <i class="fas fa-video"></i> Join Video Consultation
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if appointment.reason %}
+            <hr>
+            <h5>Reason for Visit</h5>
+            <p>{{ appointment.reason }}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

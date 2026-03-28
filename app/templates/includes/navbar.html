@@ -1,0 +1,198 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-gradient-primary sticky-top">
+    <div class="container">
+        <!-- Brand -->
+        <a class="navbar-brand" href="/">
+            <i class="fas fa-hospital me-2"></i>Smart Hospital
+        </a>
+        
+        <!-- Mobile Toggle -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <!-- Navigation Links -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+            
+                {% if current_user.is_authenticated %}
+                
+                    <!-- ==================== DOCTOR ==================== -->
+                    {% if current_user.role == 'doctor' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('doctor.dashboard') }}">
+                                <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('doctor.appointments') }}">
+                                <i class="fas fa-calendar-alt me-1"></i> Appointments
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('doctor.patients') }}">
+                                <i class="fas fa-users me-1"></i> Patients
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('doctor.prescriptions') }}">
+                                <i class="fas fa-prescription me-1"></i> Prescriptions
+                            </a>
+                        </li>
+                    
+                    <!-- ==================== PATIENT ==================== -->
+                    {% elif current_user.role == 'patient' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('patient.dashboard') }}">
+                                <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('patient.appointments') }}">
+                                <i class="fas fa-calendar-alt me-1"></i> Appointments
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('patient.prescriptions') }}">
+                                <i class="fas fa-prescription me-1"></i> Prescriptions
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('patient.meal_analyzer') }}">
+                                <i class="fas fa-utensils me-1"></i> Meal Analyzer
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('patient.reminders') }}">
+                                <i class="fas fa-bell me-1"></i> Reminders
+                            </a>
+                        </li>
+                    
+                    <!-- ==================== ADMIN ==================== -->
+                    {% elif current_user.role == 'admin' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
+                                <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('admin.users') }}">
+                                <i class="fas fa-users me-1"></i> Users
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('admin.analytics') }}">
+                                <i class="fas fa-chart-line me-1"></i> Analytics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('admin.inventory') }}">
+                                <i class="fas fa-pills me-1"></i> Inventory
+                            </a>
+                        </li>
+                    
+                    <!-- ==================== PHARMACIST ==================== -->
+                    {% elif current_user.role == 'pharmacist' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('pharmacy.dashboard') }}">
+                                <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('pharmacy.prescriptions') }}">
+                                <i class="fas fa-prescription me-1"></i> Prescriptions
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('pharmacy.inventory') }}">
+                                <i class="fas fa-boxes me-1"></i> Inventory
+                            </a>
+                        </li>
+                    
+                    {% endif %}
+                    <!-- ==================== END ROLE NAVIGATION ==================== -->
+                    
+                    <!-- ==================== USER DROPDOWN (All Users) ==================== -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" 
+                           role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle me-1"></i> {{ current_user.full_name }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li>
+                                <span class="dropdown-item-text text-muted">
+                                    <small><i class="fas fa-id-badge me-1"></i> {{ current_user.role|capitalize }}</small>
+                                </span>
+                            </li>
+                            <li>
+                                <span class="dropdown-item-text text-muted">
+                                    <small><i class="fas fa-envelope me-1"></i> {{ current_user.email }}</small>
+                                </span>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            
+                            {% if current_user.role == 'doctor' %}
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('doctor.profile') }}">
+                                    <i class="fas fa-user-edit me-1"></i> Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('doctor.register_patient') }}">
+                                    <i class="fas fa-user-plus me-1"></i> New Patient
+                                </a>
+                            </li>
+                            {% elif current_user.role == 'patient' %}
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('patient.profile') }}">
+                                    <i class="fas fa-user-edit me-1"></i> Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('patient.medical_summary') }}">
+                                    <i class="fas fa-notes-medical me-1"></i> Medical Summary
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('patient.reports') }}">
+                                    <i class="fas fa-file-medical me-1"></i> Reports
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('patient.find_doctors') }}">
+                                    <i class="fas fa-user-md me-1"></i> Find Doctors
+                                </a>
+                            </li>
+                            {% endif %}
+                            
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
+                                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                
+                {% else %}
+                    <!-- ==================== GUEST NAVIGATION ==================== -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">
+                            <i class="fas fa-home me-1"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">
+                            <i class="fas fa-sign-in-alt me-1"></i> Login
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-light text-primary ms-2 px-3" href="{{ url_for('auth.register') }}">
+                            <i class="fas fa-user-plus me-1"></i> Register
+                        </a>
+                    </li>
+                {% endif %}
+                
+            </ul>
+        </div>
+    </div>
+</nav>

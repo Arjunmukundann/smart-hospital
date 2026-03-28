@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+
+{% block title %}ECG Result - {{ ecg.classification }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .result-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .result-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .result-header {
+        padding: 35px;
+        text-align: center;
+        position: relative;
+    }
+
+    .result-header.normal {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+    }
+
+    .result-header.abnormal {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+
+    .result-header.critical {
+        background: linear-gradient(135deg, #cb2d3e 0%, #ef473a 100%);
+        color: white;
+    }
+
+    .result-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 20px;
+    }
+
+    .result-header h2 {
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .confidence-section {
+        text-align: center;
+        padding: 30px;
+        background: #f8f9fa;
+    }
+
+    .confidence-circle {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background: conic-gradient(
+            {% if ecg.confidence >= 90 %}#4caf50{% elif ecg.confidence >= 70 %}#ff9800{% else %}#f44336{% endif %} 0% {{ ecg.confidence }}%, 
+            #e0e0e0 {{ ecg.confidence }}% 100%
+        );
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+
+    .confidence-inner {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .confidence-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .model-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        padding: 30px;
+    }
+
+    @media (max-width: 768px) {
+        .model-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .model-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .model-name {
+        font-weight: 600;
+        color: #667eea;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .model-result {
+        font-size: 0.95rem;
+        color: #333;
+        padding: 8px 15px;
+        background: white;
+        border-radius: 20px;
+        display: inline-block;
+    }
+
+    .details-section {
+        padding: 30px;
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .detail-label {
+        color: #666;
+    }
+
+    .detail-value {
+        font-weight: 500;
+        color: #333;
+    }
+
+    .disclaimer {
+        background: #fff3e0;
+        border-radius: 10px;
+        padding: 15px 20px;
+        margin: 20px 30px 30px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        border: 1px solid #ffe0b2;
+    }
+
+    .disclaimer i {
+        color: #ff9800;
+        font-size: 1.2rem;
+        margin-top: 2px;
+    }
+
+    .action-buttons {
+        padding: 20px 30px 30px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .heart-rate-display {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .heart-rate-value {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #e91e63;
+    }
+
+    .heart-rate-label {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .heart-icon {
+        animation: heartbeat 1s infinite;
+    }
+
+    @keyframes heartbeat {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('doctor.dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('doctor.ecg_detection') }}">ECG Detection</a></li>
+            <li class="breadcrumb-item active">Result</li>
+        </ol>
+    </nav>
+
+    <div class="result-container">
+        <div class="result-card">
+            <!-- Header with Result -->
+            <div class="result-header {% if 'Normal' in ecg.classification %}normal{% elif ecg.severity == 'critical' %}critical{% else %}abnormal{% endif %}">
+                <div class="result-icon">
+                    <i class="fas {% if 'Normal' in ecg.classification %}fa-check-circle{% else %}fa-exclamation-triangle{% endif %}"></i>
+                </div>
+                <h2>{{ ecg.classification }}</h2>
+                <p class="mb-0 opacity-75">ECG Analysis Complete</p>
+            </div>
+
+            <!-- Confidence and Heart Rate -->
+            <div class="confidence-section">
+                <div class="row align-items-center">
+                    <div class="col-md-6 mb-4 mb-md-0">
+                        <h6 class="text-muted mb-3">Confidence Score</h6>
+                        <div class="confidence-circle">
+                            <div class="confidence-inner">
+                                <div class="confidence-value">{{ "%.1f"|format(ecg.confidence) }}%</div>
+                                <small class="text-muted">Accuracy</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="heart-rate-display">
+                            <i class="fas fa-heartbeat heart-icon text-danger mb-2" style="font-size: 2rem;"></i>
+                            <div class="heart-rate-value">{{ ecg.heart_rate or 'N/A' }}</div>
+                            <div class="heart-rate-label">Beats Per Minute</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model Predictions -->
+            <div class="model-grid">
+                <div class="model-card">
+                    <div class="model-name">
+                        <i class="fas fa-network-wired"></i> CNN Model
+                    </div>
+                    <div class="model-result">{{ ecg.cnn_prediction or 'N/A' }}</div>
+                </div>
+                <div class="model-card">
+                    <div class="model-name">
+                        <i class="fas fa-project-diagram"></i> LSTM Model
+                    </div>
+                    <div class="model-result">{{ ecg.lstm_prediction or 'N/A' }}</div>
+                </div>
+                <div class="model-card">
+                    <div class="model-name">
+                        <i class="fas fa-tree"></i> Random Forest
+                    </div>
+                    <div class="model-result">{{ ecg.rf_prediction or 'N/A' }}</div>
+                </div>
+            </div>
+
+            <!-- Details Section -->
+            <div class="details-section">
+                <h5 class="mb-3"><i class="fas fa-info-circle me-2 text-primary"></i>Analysis Details</h5>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Analysis ID</span>
+                    <span class="detail-value">ECG-{{ ecg.id }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Date & Time</span>
+                    <span class="detail-value">{{ ecg.created_at.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Patient</span>
+                    <span class="detail-value">
+                        {% if ecg.patient %}
+                            <a href="{{ url_for('doctor.patient_detail', patient_id=ecg.patient.id) }}">
+                                {{ ecg.patient.full_name }} ({{ ecg.patient.patient_id }})
+                            </a>
+                        {% else %}
+                            <span class="text-muted">Not linked to patient</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Analyzed By</span>
+                    <span class="detail-value">Dr. {{ ecg.analyzer.full_name if ecg.analyzer else 'Unknown' }}</span>
+                </div>
+                {% if ecg.analysis_notes %}
+                <div class="detail-row">
+                    <span class="detail-label">Notes</span>
+                    <span class="detail-value">{{ ecg.analysis_notes }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Disclaimer -->
+            <div class="disclaimer">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    <strong>Medical Disclaimer:</strong>
+                    <p class="mb-0 small">This ECG analysis is provided as a clinical decision support tool only. Results must be verified by a qualified cardiologist or medical professional before making any clinical decisions. Do not rely solely on AI analysis for diagnosis.</p>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="action-buttons">
+                <a href="{{ url_for('doctor.ecg_detection') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>New Analysis
+                </a>
+                <a href="{{ url_for('doctor.ecg_history') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-history me-2"></i>View History
+                </a>
+                <button class="btn btn-outline-info" onclick="window.print()">
+                    <i class="fas fa-print me-2"></i>Print Report
+                </button>
+                {% if ecg.patient %}
+                <a href="{{ url_for('doctor.patient_detail', patient_id=ecg.patient.id) }}" class="btn btn-outline-success">
+                    <i class="fas fa-user me-2"></i>View Patient
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

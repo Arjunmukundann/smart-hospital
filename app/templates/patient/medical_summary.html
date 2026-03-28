@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Medical Summary - Smart Hospital{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="fw-bold mb-4">
+        <i class="fas fa-notes-medical text-info me-2"></i>My Medical Summary
+    </h2>
+    
+    <div class="row g-4">
+        <!-- Patient Info -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-user me-2"></i>My Profile</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Name:</strong> {{ patient.full_name }}</p>
+                    <p><strong>Age:</strong> {{ patient.age }} years</p>
+                    <p><strong>Gender:</strong> {{ patient.gender }}</p>
+                    <p><strong>Blood Group:</strong> {{ patient.blood_group or 'Not specified' }}</p>
+                    
+                    <hr>
+                    
+                    <h6 class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Allergies</h6>
+                    {% set allergies = patient.get_allergies_list() %}
+                    {% if allergies %}
+                        {% for allergy in allergies %}
+                        <span class="badge bg-danger mb-1">{{ allergy }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted small">No known allergies</p>
+                    {% endif %}
+                    
+                    <h6 class="text-warning mt-3"><i class="fas fa-heartbeat me-2"></i>Conditions</h6>
+                    {% set conditions = patient.get_conditions_list() %}
+                    {% if conditions %}
+                        {% for condition in conditions %}
+                        <span class="badge bg-warning text-dark mb-1">{{ condition }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted small">No existing conditions</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reports -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-file-medical me-2"></i>Recent Report Summaries</h5>
+                </div>
+                <div class="card-body">
+                    {% if reports %}
+                    {% for report in reports %}
+                    <div class="report-summary mb-4 p-3 bg-light rounded">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">{{ report.type|replace('_', ' ')|title }} Report</h6>
+                            <small class="text-muted">{{ report.date.strftime('%b %d, %Y') }}</small>
+                        </div>
+                        <p class="mb-0">{{ report.summary }}</p>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted text-center">No analyzed reports yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Active Prescriptions Summary -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-prescription me-2"></i>Active Prescriptions</h5>
+                </div>
+                <div class="card-body">
+                    {% if prescriptions %}
+                    {% for rx in prescriptions %}
+                    <div class="prescription-summary mb-3 p-3 bg-light rounded">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ rx.diagnosis }}</h6>
+                                <small class="text-muted">Dr. {{ rx.doctor.full_name }}</small>
+                            </div>
+                            <span class="badge bg-success">Active</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted text-center">No active prescriptions.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

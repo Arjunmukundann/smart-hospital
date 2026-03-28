@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+
+{% block title %}ML Predictions - Smart Hospital{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="fw-bold mb-4">
+        <i class="fas fa-brain text-primary me-2"></i>Patient Inflow Predictions
+    </h2>
+    
+    <!-- Model Info -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h4 class="mb-0">{{ metrics.model_type|default('Simple')|title }}</h4>
+                    <small>Model Type</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h4 class="mb-0">{{ metrics.mae|default('N/A') }}</h4>
+                    <small>Mean Absolute Error</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h4 class="mb-0">{{ metrics.rmse|default('N/A') }}</h4>
+                    <small>RMSE</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h4 class="mb-0">{{ metrics.r2|default('N/A') }}</h4>
+                    <small>R² Score</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <!-- Prediction Chart -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-line text-primary me-2"></i>7-Day Forecast</h5>
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px;">
+                        <canvas id="predictionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Predictions Table -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-calendar-alt text-success me-2"></i>Predicted Values</h5>
+                </div>
+                <div class="card-body">
+                    {% if predictions %}
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Day</th>
+                                <th>Predicted</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pred in predictions %}
+                            <tr>
+                                <td>{{ pred.date[5:] if pred.date else 'N/A' }}</td>
+                                <td>{{ pred.day_name[:3] if pred.day_name else 'N/A' }}</td>
+                                <td>
+                                    <strong>{{ pred.predicted_count|default(0) }}</strong>
+                                    <br>
+                                    <small class="text-muted">({{ pred.lower_bound|default(0) }}-{{ pred.upper_bound|default(0) }})</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-chart-bar fa-3x mb-3"></i>
+                        <p>No predictions available</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Historical Trend -->
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-history text-info me-2"></i>Historical Data (Last 30 Days)</h5>
+                </div>
+                <div class="card-body">
+                    <div style="height: 200px;">
+                        <canvas id="historicalChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js not loaded!');
+        return;
+    }
+    
+    // ✅ FIX: Safe data parsing
+    let predictions = [];
+    let historical = [];
+    
+    try {
+        predictions = {{ predictions|tojson|safe }} || [];
+    } catch (e) {
+        predictions = [];
+    }
+    
+    try {
+        historical = {{ historical_data|tojson|safe }} || [];
+    } catch (e) {
+        historical = [];
+    }
+    
+    // Prediction Chart
+    const predCtx = document.getElementById('predictionChart');
+    if (predCtx && predictions.length > 0) {
+        const predDates = predictions.map(p => p.day_name ? p.day_name.substring(0, 3) : 'N/A');
+        const predValues = predictions.map(p => p.predicted_count || 0);
+        
+        new Chart(predCtx.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: predDates,
+                datasets: [{
+                    label: 'Predicted Patients',
+                    data: predValues,
+                    backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                    borderColor: '#667eea',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    } else if (predCtx) {
+        // Show no data message
+        predCtx.parentElement.innerHTML = '<div class="text-center text-muted py-5"><i class="fas fa-chart-bar fa-3x mb-3"></i><p>No prediction data available</p></div>';
+    }
+    
+    // Historical Chart
+    const histCtx = document.getElementById('historicalChart');
+    if (histCtx && historical.length > 0) {
+        const histDates = historical.map(h => h.date ? h.date.substring(5) : '');
+        const histCounts = historical.map(h => h.patient_count || 0);
+        
+        new Chart(histCtx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: histDates,
+                datasets: [{
+                    label: 'Actual Patients',
+                    data: histCounts,
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    } else if (histCtx) {
+        histCtx.parentElement.innerHTML = '<div class="text-center text-muted py-5"><i class="fas fa-history fa-3x mb-3"></i><p>No historical data available</p></div>';
+    }
+});
+</script>
+{% endblock %}

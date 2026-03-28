@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Pharmacy Dashboard - Smart Hospital{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-pills text-primary"></i> Pharmacy Dashboard</h2>
+            <p class="text-muted mb-0">Welcome, {{ current_user.full_name }}</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50">Total Medicines</h6>
+                            <h2 class="mb-0">{{ total_medicines }}</h2>
+                        </div>
+                        <i class="fas fa-capsules fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6>Low Stock</h6>
+                            <h2 class="mb-0">{{ low_stock }}</h2>
+                        </div>
+                        <i class="fas fa-exclamation-triangle fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50">Out of Stock</h6>
+                            <h2 class="mb-0">{{ out_of_stock }}</h2>
+                        </div>
+                        <i class="fas fa-times-circle fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50">Today's Revenue</h6>
+                            <h2 class="mb-0">₹{{ "%.2f"|format(today_revenue) }}</h2>
+                        </div>
+                        <i class="fas fa-rupee-sign fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a href="{{ url_for('pharmacy.prescriptions') }}" class="btn btn-primary">
+                            <i class="fas fa-prescription me-2"></i>View Prescriptions ({{ pending_prescriptions }})
+                        </a>
+                        <a href="{{ url_for('pharmacy.inventory') }}" class="btn btn-info">
+                            <i class="fas fa-boxes me-2"></i>View Inventory
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Pending Prescriptions -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-prescription text-primary me-2"></i>Pending Prescriptions</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_prescriptions %}
+                    <div class="list-group list-group-flush">
+                        {% for rx in recent_prescriptions[:5] %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ rx.prescription_id }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    {{ rx.patient.full_name if rx.patient else 'N/A' }}
+                                </small>
+                            </div>
+                            <a href="{{ url_for('pharmacy.view_prescription', prescription_id=rx.id) }}" 
+                               class="btn btn-sm btn-success">
+                                Dispense
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-4">No pending prescriptions</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Low Stock Alerts -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle text-warning me-2"></i>Low Stock Alerts</h5>
+                </div>
+                <div class="card-body">
+                    {% if low_stock_items %}
+                    <div class="list-group list-group-flush">
+                        {% for item in low_stock_items[:5] %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ item.medicine_name }}</strong>
+                                <br>
+                                <small class="text-muted">Current: {{ item.current_stock }} {{ item.unit }}</small>
+                            </div>
+                            <span class="badge bg-warning">Low</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-success text-center py-4">
+                        <i class="fas fa-check-circle fa-2x mb-2"></i><br>
+                        All stock levels are adequate
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

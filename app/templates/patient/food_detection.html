@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Food Detection - Smart Hospital{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-camera me-2"></i>
+                        Food Detection & Analysis
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        Upload a photo of your food and we'll detect what's in it, 
+                        then check for any interactions with your medications.
+                    </p>
+                    
+                    <!-- Upload Form -->
+                    <form method="POST" enctype="multipart/form-data" id="foodDetectionForm">
+                        <!-- CSRF TOKEN - IMPORTANT! -->
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-image me-1"></i> Upload Food Image
+                            </label>
+                            <input type="file" name="food_image" class="form-control" 
+                                   accept="image/*" required id="foodImageInput">
+                            <small class="text-muted">Supported formats: JPG, PNG, GIF</small>
+                        </div>
+                        
+                        <!-- Image Preview -->
+                        <div class="mb-4 text-center" id="previewContainer" style="display: none;">
+                            <img id="imagePreview" src="" alt="Preview" 
+                                 class="img-fluid rounded" style="max-height: 300px;">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success btn-lg w-100" id="analyzeBtn">
+                            <i class="fas fa-search me-2"></i> Detect & Analyze Food
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Results -->
+            {% if result %}
+            <div class="card mt-4 shadow">
+                <div class="card-header {{ 'bg-success' if result.is_safe else 'bg-danger' }} text-white">
+                    <h5 class="mb-0">
+                        {% if result.is_safe %}
+                        <i class="fas fa-check-circle me-2"></i> Analysis Result - SAFE
+                        {% else %}
+                        <i class="fas fa-exclamation-triangle me-2"></i> Analysis Result - WARNINGS
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Detected Foods -->
+                    {% if result.detected_foods %}
+                    <h6><i class="fas fa-utensils me-1"></i> Detected Foods:</h6>
+                    <div class="mb-3">
+                        {% for food in result.detected_foods %}
+                        <span class="badge bg-info me-1 mb-1">{{ food }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Message -->
+                    <div class="alert {{ 'alert-success' if result.is_safe else 'alert-danger' }}">
+                        {{ result.message }}
+                    </div>
+                    
+                    <!-- Warnings -->
+                    {% if result.warnings %}
+                    <h6 class="text-danger mt-3">
+                        <i class="fas fa-exclamation-triangle me-1"></i> Warnings:
+                    </h6>
+                    {% for warning in result.warnings %}
+                    <div class="alert alert-warning">
+                        <strong>{{ warning.medicine }}</strong> + <strong>{{ warning.food }}</strong>
+                        <p class="mb-1">{{ warning.description }}</p>
+                        <small><strong>Recommendation:</strong> {{ warning.recommendation }}</small>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Alternative: Manual Entry -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-keyboard me-2"></i> Or Enter Manually
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <a href="{{ url_for('patient.meal_analyzer') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-edit me-2"></i> Type Your Meal Instead
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Image preview
+document.getElementById('foodImageInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('imagePreview').src = e.target.result;
+            document.getElementById('previewContainer').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Loading state on submit
+document.getElementById('foodDetectionForm').addEventListener('submit', function() {
+    const btn = document.getElementById('analyzeBtn');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Analyzing...';
+    btn.disabled = true;
+});
+</script>
+{% endblock %}

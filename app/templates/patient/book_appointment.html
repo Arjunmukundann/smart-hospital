@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Book Appointment - Smart Hospital{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header -->
+            <div class="mb-4">
+                <h2><i class="fas fa-calendar-plus text-primary"></i> Book Appointment</h2>
+                <p class="text-muted">Schedule a consultation with our doctors</p>
+            </div>
+
+            <form method="POST" id="bookingForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="appointment_time" id="appointmentTime">
+
+                <div class="row">
+                    <!-- Step 1: Select Doctor -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <span class="badge bg-primary me-2">1</span>
+                                    Select Doctor
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Specialty Filter -->
+                                <div class="mb-3">
+                                    <label class="form-label">Filter by Specialty</label>
+                                    <select id="specialtyFilter" class="form-select">
+                                        <option value="">All Specialties</option>
+                                        {% for spec in specializations %}
+                                        <option value="{{ spec }}">{{ spec }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <!-- Doctor Selection -->
+                                <div class="mb-3">
+                                    <label class="form-label">Choose Doctor <span class="text-danger">*</span></label>
+                                    <select name="doctor_id" id="doctorSelect" class="form-select" required>
+                                        <option value="">-- Select a Doctor --</option>
+                                        {% for doctor in doctors %}
+                                        <option value="{{ doctor.id }}" 
+                                                data-specialty="{{ doctor.specialization }}"
+                                                data-fee="{{ doctor.consultation_fee or 0 }}"
+                                                data-video-fee="{{ doctor.video_consultation_fee or 0 }}"
+                                                data-online="{{ doctor.is_available_online }}"
+                                                {{ 'selected' if selected_doctor_id == doctor.id }}>
+                                            Dr. {{ doctor.full_name }} - {{ doctor.specialization or 'General' }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <!-- Doctor Info -->
+                                <div id="doctorInfo" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Select Date & Time -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <span class="badge bg-primary me-2">2</span>
+                                    Select Date & Time
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Appointment Type -->
+                                <div class="mb-3">
+                                    <label class="form-label">Consultation Type</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check">
+                                            <input type="radio" name="appointment_type" value="in_person" 
+                                                   id="typeInPerson" class="form-check-input" checked>
+                                            <label class="form-check-label" for="typeInPerson">
+                                                <i class="fas fa-user-md"></i> In-Person Visit
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input type="radio" name="appointment_type" value="video" 
+                                                   id="typeVideo" class="form-check-input">
+                                            <label class="form-check-label" for="typeVideo">
+                                                <i class="fas fa-video"></i> Video Consultation
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Date Selection -->
+                                <div class="mb-3">
+                                    <label class="form-label">Appointment Date <span class="text-danger">*</span></label>
+                                    <input type="date" name="appointment_date" id="appointmentDate" 
+                                           class="form-control" required
+                                           value="{{ selected_date }}">
+                                </div>
+
+                                <!-- Time Slots -->
+                                <div class="mb-3">
+                                    <label class="form-label">Available Time Slots</label>
+                                    <div id="timeSlots">
+                                        <p class="text-muted">Please select a doctor and date first</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Additional Details -->
+                    <div class="col-12 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <span class="badge bg-primary me-2">3</span>
+                                    Additional Details
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <label class="form-label">Reason for Visit</label>
+                                        <textarea name="reason" class="form-control" rows="3" 
+                                                  placeholder="Briefly describe your symptoms or reason for consultation..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Booking Summary -->
+                    <div class="col-12 mb-4">
+                        <div id="bookingSummary" style="display: none;"></div>
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('patient.dashboard') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" id="submitBooking" class="btn btn-primary btn-lg" disabled>
+                                <i class="fas fa-calendar-check"></i> Confirm Booking
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/appointment.js') }}"></script>
+{% endblock %}

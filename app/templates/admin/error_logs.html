@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}Error Logs - Smart Hospital{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="fw-bold mb-4">
+        <i class="fas fa-exclamation-triangle text-danger me-2"></i>Safety Alert Logs
+    </h2>
+    
+    <!-- Summary Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h4>{{ total_alerts }}</h4>
+                    <small>Total Alerts</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-dark text-white">
+                <div class="card-body">
+                    <h4>{{ critical_alerts }}</h4>
+                    <small>Critical Alerts</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h4>{{ overridden_alerts }}</h4>
+                    <small>Overridden</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <canvas id="typeChart" height="60"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label">Severity</label>
+                    <select class="form-select" name="severity">
+                        <option value="">All</option>
+                        <option value="critical">Critical</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Type</label>
+                    <select class="form-select" name="alert_type">
+                        <option value="">All</option>
+                        <option value="allergy">Allergy</option>
+                        <option value="drug_drug">Drug-Drug</option>
+                        <option value="drug_food">Drug-Food</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">From Date</label>
+                    <input type="date" class="form-control" name="date_from">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">To Date</label>
+                    <input type="date" class="form-control" name="date_to">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter me-2"></i>Filter
+                    </button>
+                </div>
+                <div class="col-md-2">
+                    <a href="{{ url_for('admin.error_logs') }}" class="btn btn-outline-secondary w-100">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Alerts Table -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date/Time</th>
+                            <th>Type</th>
+                            <th>Severity</th>
+                            <th>Medicine</th>
+                            <th>Conflict</th>
+                            <th>Doctor</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for alert in alerts.items %}
+                        <tr>
+                            <td>
+                                <small>{{ alert.created_at.strftime('%Y-%m-%d') }}</small>
+                                <br>
+                                <small class="text-muted">{{ alert.created_at.strftime('%H:%M') }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ 'danger' if alert.alert_type == 'allergy' else 'warning' if alert.alert_type == 'drug_drug' else 'info' }}">
+                                    {{ alert.alert_type|replace('_', ' ')|title }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ 'danger' if alert.severity == 'critical' else 'warning' if alert.severity == 'high' else 'secondary' }}">
+                                    {{ alert.severity|upper }}
+                                </span>
+                            </td>
+                            <td>{{ alert.medicine_name or '-' }}</td>
+                            <td>{{ alert.conflicting_item or '-' }}</td>
+                            <td>{{ alert.doctor.full_name if alert.doctor else '-' }}</td>
+                            <td>
+                                {% if alert.is_overridden %}
+                                <span class="badge bg-secondary">Overridden</span>
+                                {% elif alert.is_acknowledged %}
+                                <span class="badge bg-success">Acknowledged</span>
+                                {% else %}
+                                <span class="badge bg-warning">Pending</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">No alerts found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if alerts.pages > 1 %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% for page in alerts.iter_pages() %}
+                        {% if page %}
+                            <li class="page-item {{ 'active' if page == alerts.page else '' }}">
+                                <a class="page-link" href="{{ url_for('admin.error_logs', page=page) }}">{{ page }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Alert Type Distribution Mini Chart
+    const typeData = {{ type_distribution|tojson }};
+    new Chart(document.getElementById('typeChart'), {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(typeData),
+            datasets: [{
+                data: Object.values(typeData),
+                backgroundColor: ['#dc3545', '#ffc107', '#17a2b8']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+</script>
+{% endblock %}

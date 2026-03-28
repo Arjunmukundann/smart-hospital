@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+
+{% block title %}Reminders - Smart Hospital{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- PAGE HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">
+            <i class="fas fa-bell text-primary me-2"></i>My Reminders
+        </h2>
+        <a href="{{ url_for('patient.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+        </a>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- LEFT COLUMN -->
+        <div class="col-lg-8">
+
+            <!-- UPCOMING APPOINTMENTS -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>Upcoming Appointments
+                        {% if upcoming_appointments %}
+                        <span class="badge bg-light text-primary float-end">
+                            {{ upcoming_appointments|length }}
+                        </span>
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_appointments %}
+                        {% for apt in upcoming_appointments %}
+                        <div class="d-flex justify-content-between border-bottom py-2">
+                            <div>
+                                <strong>{{ apt.appointment_date.strftime('%B %d, %Y') }}</strong>
+                                <div class="text-muted small">
+                                    {{ apt.appointment_time.strftime('%I:%M %p') }} ·
+                                    Dr. {{ apt.doctor.full_name if apt.doctor else 'N/A' }}
+                                </div>
+                            </div>
+                            <a href="{{ url_for('patient.view_appointment', appointment_id=apt.id) }}"
+                               class="btn btn-sm btn-outline-primary">View</a>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center mb-0">No upcoming appointments</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- MEDICINE SCHEDULE -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-pills me-2"></i>Today’s Medicine Schedule
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+
+                        {% set slots = [
+                            ('Morning', 'sun', morning_meds),
+                            ('Afternoon', 'cloud-sun', afternoon_meds),
+                            ('Evening', 'cloud-moon', evening_meds),
+                            ('Night', 'moon', night_meds)
+                        ] %}
+
+                        {% for label, icon, meds in slots %}
+                        <div class="col-md-6">
+                            <div class="border rounded p-3 h-100">
+                                <h6 class="fw-bold">
+                                    <i class="fas fa-{{ icon }} me-2"></i>{{ label }}
+                                </h6>
+                                {% if meds %}
+                                    {% for med in meds %}
+                                    <div class="small border-bottom py-1">
+                                        <strong>{{ med.name }}</strong><br>
+                                        <span class="text-muted">
+                                            {{ med.dosage }} – {{ med.instructions }}
+                                        </span>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="text-muted small mb-0">No medicines</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTIVE PRESCRIPTIONS -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-prescription me-2"></i>Active Prescriptions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if active_prescriptions %}
+                        {% for rx in active_prescriptions %}
+                        <div class="d-flex justify-content-between border-bottom py-2">
+                            <div>
+                                Prescription #{{ rx.id }}<br>
+                                <small class="text-muted">
+                                    Dr. {{ rx.doctor.full_name if rx.doctor else 'N/A' }}
+                                </small>
+                            </div>
+                            <a href="{{ url_for('patient.view_prescription', prescription_id=rx.id) }}"
+                               class="btn btn-sm btn-outline-success">View</a>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center mb-0">No active prescriptions</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT SIDEBAR -->
+        <!-- RIGHT SIDEBAR -->
+<div class="col-lg-4">
+    <div class="card shadow-sm sticky-top" style="top:20px;">
+
+        <!-- REMINDER SETTINGS -->
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-cog me-2"></i>Reminder Settings
+            </h5>
+        </div>
+
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('patient.save_reminder_settings') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" name="enable_reminders"
+                           {{ 'checked' if reminder_settings and reminder_settings.is_active else '' }}>
+                    <label class="form-check-label fw-bold">Enable Reminders</label>
+                </div>
+
+                <hr>
+
+                <h6>Email</h6>
+                <input type="email" class="form-control mb-3"
+                       name="reminder_email"
+                       value="{{ reminder_settings.reminder_email if reminder_settings else patient.email }}">
+
+                <h6>SMS</h6>
+                <input type="tel" class="form-control mb-3"
+                       name="reminder_phone"
+                       value="{{ reminder_settings.reminder_phone if reminder_settings else patient.phone }}">
+
+                <button class="btn btn-success w-100 mb-3">
+                    <i class="fas fa-save me-1"></i>Save Settings
+                </button>
+            </form>
+
+            <!-- APPOINTMENT SECTION -->
+            <hr>
+
+            <h5 class="fw-bold mb-3">
+                <i class="fas fa-calendar-plus me-2"></i>Appointment
+            </h5>
+
+            <a href="{{ url_for('patient.book_appointment') }}" class="btn btn-primary w-100 mb-2">
+                <i class="fas fa-calendar-plus me-2"></i>Book Appointment
+            </a>
+
+            <a href="{{ url_for('patient.appointments') }}" class="btn btn-outline-primary w-100">
+                <i class="fas fa-list me-2"></i>View Appointments
+            </a>
+        </div>
+    </div>
+</div>
+
+
+
+
+                    </form>
+
+                </div>
+            </div>
+        </div>
+        <!-- APPOINTMENT ACTIONS -->
+ 
+
+    </div>
+</div>
+{% endblock %}

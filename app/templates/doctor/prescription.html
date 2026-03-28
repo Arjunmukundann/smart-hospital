@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Prescription - {{ patient.full_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <form method="POST" action="{{ url_for('doctor.prescription', patient_id=patient.id) }}" id="prescriptionForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <!-- Patient Info Card -->
+        <div class="card shadow-sm mb-4 border-primary">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h5 class="mb-1"><i class="fas fa-user text-primary me-2"></i>{{ patient.full_name }}</h5>
+                        <p class="text-muted mb-0">
+                            {{ patient.patient_id }} • {{ patient.age }} yrs • {{ patient.gender }}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        {% set allergies = patient.get_allergies_list() %}
+                        {% if allergies %}
+                        <div class="alert alert-danger py-2 mb-0">
+                            <strong><i class="fas fa-exclamation-triangle me-2"></i>Allergies:</strong>
+                            {% for allergy in allergies %}
+                            <span class="badge bg-danger ms-1">{{ allergy }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-prescription me-2"></i>New Prescription</h4>
+            </div>
+            <div class="card-body">
+                <!-- Diagnosis -->
+                <div class="mb-4">
+                    <label for="diagnosis" class="form-label fw-bold">Diagnosis *</label>
+                    <textarea class="form-control" id="diagnosis" name="diagnosis" rows="2" 
+                              placeholder="Enter diagnosis" required></textarea>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="symptoms" class="form-label fw-bold">Symptoms</label>
+                    <textarea class="form-control" id="symptoms" name="symptoms" rows="2" 
+                              placeholder="Enter symptoms"></textarea>
+                </div>
+                
+                <!-- Medicines Section -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <label class="form-label fw-bold mb-0">Medicines *</label>
+                        <button type="button" class="btn btn-success btn-sm" id="addMedicine">
+                            <i class="fas fa-plus me-1"></i>Add Medicine
+                        </button>
+                    </div>
+                    
+                    <div id="medicinesContainer">
+                        <!-- Medicine Row Template -->
+                        <div class="medicine-row card mb-3">
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <!-- Medicine Name -->
+                                    <div class="col-md-4">
+                                        <label class="form-label">Medicine Name *</label>
+                                        <input type="text" class="form-control medicine-name" 
+                                               name="medicine_name[]" placeholder="Enter medicine name" required>
+                                    </div>
+                                    
+                                    <!-- Dosage -->
+                                    <div class="col-md-2">
+                                        <label class="form-label">Dosage *</label>
+                                        <input type="text" class="form-control" name="dosage[]" 
+                                               placeholder="e.g., 500mg" required>
+                                    </div>
+                                    
+                                    <!-- Frequency -->
+                                    <div class="col-md-3">
+                                        <label class="form-label">Frequency</label>
+                                        <select class="form-select" name="frequency[]">
+                                            <option value="Once daily">Once daily</option>
+                                            <option value="Twice daily" selected>Twice daily</option>
+                                            <option value="Three times daily">Three times daily</option>
+                                            <option value="Four times daily">Four times daily</option>
+                                            <option value="As needed">As needed</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- Duration -->
+                                    <div class="col-md-2">
+                                        <label class="form-label">Duration</label>
+                                        <input type="text" class="form-control" name="duration[]" 
+                                               placeholder="e.g., 7 days" value="7 days">
+                                    </div>
+                                    
+                                    <!-- Remove Button -->
+                                    <div class="col-md-1 d-flex align-items-end">
+                                        <button type="button" class="btn btn-outline-danger btn-sm remove-medicine" disabled>
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Timing Selection Row -->
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-6">
+                                        <label class="form-label">When to Take (Select all that apply):</label>
+                                        <div class="d-flex flex-wrap gap-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input timing-checkbox" type="checkbox" 
+                                                       name="morning[]" value="1" id="morning_0">
+                                                <label class="form-check-label" for="morning_0">
+                                                    🌅 Morning
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input timing-checkbox" type="checkbox" 
+                                                       name="afternoon[]" value="1" id="afternoon_0">
+                                                <label class="form-check-label" for="afternoon_0">
+                                                    ☀️ Afternoon
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input timing-checkbox" type="checkbox" 
+                                                       name="evening[]" value="1" id="evening_0">
+                                                <label class="form-check-label" for="evening_0">
+                                                    🌆 Evening
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input timing-checkbox" type="checkbox" 
+                                                       name="night[]" value="1" id="night_0">
+                                                <label class="form-check-label" for="night_0">
+                                                    🌙 Night
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-3">
+                                        <label class="form-label">Food Timing</label>
+                                        <select class="form-select" name="timing[]">
+                                            <option value="After meals">After meals</option>
+                                            <option value="Before meals">Before meals</option>
+                                            <option value="With meals">With meals</option>
+                                            <option value="Empty stomach">Empty stomach</option>
+                                            <option value="At bedtime">At bedtime</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="col-md-3">
+                                        <label class="form-label">Special Instructions</label>
+                                        <input type="text" class="form-control" name="instructions[]" 
+                                               placeholder="e.g., Take with water">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Additional Notes -->
+                <div class="mb-4">
+                    <label for="notes" class="form-label fw-bold">Additional Notes</label>
+                    <textarea class="form-control" id="notes" name="notes" rows="2" 
+                              placeholder="Any additional instructions for the patient"></textarea>
+                </div>
+                
+                <hr>
+                
+                <!-- Action Buttons -->
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('doctor.patient_detail', patient_id=patient.id) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-check me-2"></i>Create Prescription
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let medicineIndex = 0;
+    
+    // Add medicine row
+    document.getElementById('addMedicine').addEventListener('click', function() {
+        medicineIndex++;
+        const container = document.getElementById('medicinesContainer');
+        const template = container.querySelector('.medicine-row').cloneNode(true);
+        
+        // Clear input values
+        template.querySelectorAll('input[type="text"]').forEach(input => input.value = '');
+        template.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        template.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+        
+        // Update IDs for checkboxes
+        template.querySelectorAll('.timing-checkbox').forEach(cb => {
+            const newId = cb.id.replace(/_\d+$/, '_' + medicineIndex);
+            cb.id = newId;
+            cb.nextElementSibling.setAttribute('for', newId);
+        });
+        
+        // Enable remove button
+        template.querySelector('.remove-medicine').disabled = false;
+        
+        container.appendChild(template);
+        
+        // Add remove listener
+        template.querySelector('.remove-medicine').addEventListener('click', function() {
+            template.remove();
+        });
+    });
+    
+    // Remove medicine row
+    document.querySelectorAll('.remove-medicine').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const rows = document.querySelectorAll('.medicine-row');
+            if (rows.length > 1) {
+                this.closest('.medicine-row').remove();
+            }
+        });
+    });
+    
+    // Auto-check timing based on frequency
+    document.querySelectorAll('select[name="frequency[]"]').forEach(select => {
+        select.addEventListener('change', function() {
+            const row = this.closest('.medicine-row');
+            const checkboxes = row.querySelectorAll('.timing-checkbox');
+            
+            // Uncheck all first
+            checkboxes.forEach(cb => cb.checked = false);
+            
+            // Auto-select based on frequency
+            switch(this.value) {
+                case 'Once daily':
+                    row.querySelector('[id^="morning"]').checked = true;
+                    break;
+                case 'Twice daily':
+                    row.querySelector('[id^="morning"]').checked = true;
+                    row.querySelector('[id^="night"]').checked = true;
+                    break;
+                case 'Three times daily':
+                    row.querySelector('[id^="morning"]').checked = true;
+                    row.querySelector('[id^="afternoon"]').checked = true;
+                    row.querySelector('[id^="night"]').checked = true;
+                    break;
+                case 'Four times daily':
+                    checkboxes.forEach(cb => cb.checked = true);
+                    break;
+            }
+        });
+    });
+</script>
+{% endblock %}

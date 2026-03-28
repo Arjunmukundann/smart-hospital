@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}ECG Arrhythmia Detection - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="fas fa-heartbeat text-danger me-2"></i>
+                        ECG Arrhythmia Detection
+                    </h2>
+                    <p class="text-muted mb-0">ML-powered ECG analysis using ensemble deep learning</p>
+                </div>
+                <a href="{{ url_for('ecg.upload') }}" class="btn btn-danger btn-lg">
+                    <i class="fas fa-upload me-2"></i>Upload ECG
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Alert -->
+    {% if not models_loaded %}
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <strong>Warning:</strong> ECG models not loaded. Please check server configuration.
+        <br><small>Expected path: <code>app/static/models/ecg/</code></small>
+    </div>
+    {% else %}
+    <div class="alert alert-success">
+        <i class="fas fa-check-circle me-2"></i>
+        <strong>Ready:</strong> All ECG models loaded successfully. You can upload ECG files for analysis.
+    </div>
+    {% endif %}
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-2 col-sm-4 mb-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-2x mb-2"></i>
+                    <h3 class="mb-0">{{ total_tests }}</h3>
+                    <small>Total Tests</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-4 mb-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-2x mb-2"></i>
+                    <h3 class="mb-0">{{ risk_counts.normal }}</h3>
+                    <small>Normal</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-4 mb-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-info-circle fa-2x mb-2"></i>
+                    <h3 class="mb-0">{{ risk_counts.low }}</h3>
+                    <small>Low Risk</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-4 mb-3">
+            <div class="card bg-warning text-dark h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                    <h3 class="mb-0">{{ risk_counts.moderate }}</h3>
+                    <small>Moderate</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-4 mb-3">
+            <div class="card bg-danger text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-times-circle fa-2x mb-2"></i>
+                    <h3 class="mb-0">{{ risk_counts.high }}</h3>
+                    <small>High Risk</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-4 mb-3">
+            <div class="card bg-secondary text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-question-circle fa-2x mb-2"></i>
+                    <h3 class="mb-0">{{ risk_counts.unknown }}</h3>
+                    <small>Unknown</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Results -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history text-primary me-2"></i>Recent ECG Tests
+                    </h5>
+                    <a href="{{ url_for('ecg.all_results') }}" class="btn btn-sm btn-outline-primary">
+                        View All
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_results %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Date</th>
+                                    <th>Beats</th>
+                                    <th>Risk</th>
+                                    <th>Confidence</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for result in recent_results %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ result.ecg_patient.name }}</strong>
+                                        <small class="d-block text-muted">
+                                            {{ result.ecg_patient.age }}y, {{ result.ecg_patient.gender }}
+                                        </small>
+                                    </td>
+                                    <td>{{ result.analysis_date.strftime('%b %d, %Y %H:%M') if result.analysis_date else 'N/A' }}</td>
+                                    <td>{{ result.total_beats }}</td>
+                                    <td>
+                                        {% set risk = result.risk_level|lower %}
+                                        <span class="badge 
+                                            {% if risk == 'normal' %}bg-success
+                                            {% elif risk == 'low' %}bg-info
+                                            {% elif risk == 'moderate' %}bg-warning text-dark
+                                            {% elif risk == 'high' %}bg-danger
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ result.risk_level }}
+                                        </span>
+                                    </td>
+                                    <td>{{ "%.1f"|format(result.confidence * 100) }}%</td>
+                                    <td>
+                                        <a href="{{ url_for('ecg.view_result', result_id=result.id) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-heartbeat fa-4x text-muted mb-3"></i>
+                        <h5 class="text-muted">No ECG Tests Yet</h5>
+                        <p class="text-muted">Upload an ECG file to get started</p>
+                        <a href="{{ url_for('ecg.upload') }}" class="btn btn-danger">
+                            <i class="fas fa-upload me-2"></i>Upload ECG
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Info -->
+        <div class="col-lg-4">
+            <!-- About ECG Detection -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle text-info me-2"></i>About ECG Detection
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted">
+                        This system uses an ensemble of deep learning models to detect cardiac arrhythmias:
+                    </p>
+                    <ul class="small text-muted mb-3">
+                        <li><strong>CNN</strong> - Convolutional Neural Network</li>
+                        <li><strong>LSTM</strong> - Long Short-Term Memory</li>
+                        <li><strong>CNN-LSTM</strong> - Hybrid model</li>
+                        <li><strong>Random Forest</strong> - Traditional ML</li>
+                    </ul>
+                    <p class="small text-muted mb-0">
+                        Trained on MIT-BIH Arrhythmia Database (360 Hz sampling rate).
+                    </p>
+                </div>
+            </div>
+
+            <!-- Beat Classification -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-heartbeat text-danger me-2"></i>Beat Classifications
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-success">N</span>
+                        <span class="small">Normal beats</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-danger">V</span>
+                        <span class="small">Ventricular ectopic</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-warning text-dark">S</span>
+                        <span class="small">Supraventricular ectopic</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-info">F</span>
+                        <span class="small">Fusion beats</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-secondary">Q</span>
+                        <span class="small">Unknown/Uncertain</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

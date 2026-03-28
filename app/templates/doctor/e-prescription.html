@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}E-Prescription - {{ prescription.prescription_id }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white text-center">
+            <h3>E-Prescription</h3>
+            <h5>{{ prescription.prescription_id }} | {{ prescription.created_at.strftime('%d %B %Y') }}</h5>
+        </div>
+        <div class="card-body">
+
+            <!-- Hospital Header -->
+            <div class="text-center mb-4">
+                <h2 class="text-primary">SMART HOSPITAL</h2>
+                <p>Near Railway Station, Your City | Phone: +91 98765 43210</p>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <strong>Patient:</strong> {{ patient.full_name }}<br>
+                    <strong>ID:</strong> {{ patient.patient_id }} | Age/Gender: {{ patient.age }} / {{ patient.gender|capitalize }}<br>
+                    <strong>Phone:</strong> {{ patient.phone }}
+                </div>
+                <div class="col-md-6 text-right">
+                    <strong>Doctor:</strong> Dr. {{ current_user.full_name }}<br>
+                    <strong>Specialization:</strong> {{ current_user.specialization }}<br>
+                    <strong>Date:</strong> {{ "now"|strftime("%d %B %Y, %I:%M %p") }}
+                </div>
+            </div>
+
+            <hr>
+
+            <h5>Diagnosis</h5>
+            <p class="border p-3 bg-light">{{ prescription.diagnosis }}</p>
+
+            {% if prescription.symptoms %}
+            <h5>Symptoms</h5>
+            <p class="border p-3 bg-light">{{ prescription.symptoms }}</p>
+            {% endif %}
+
+            <h5>Prescription</h5>
+            <table class="table table-bordered">
+                <thead class="bg-primary text-white">
+                    <tr>
+                        <th>Medicine</th>
+                        <th>Dosage</th>
+                        <th>Frequency</th>
+                        <th>Duration</th>
+                        <th>Instructions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for med in prescription.medicines %}
+                    <tr>
+                        <td><strong>{{ med.medicine_name }}</strong></td>
+                        <td>{{ med.dosage }}</td>
+                        <td>{{ med.frequency }}</td>
+                        <td>{{ med.duration }}</td>
+                        <td>{{ med.instructions or 'As directed' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Referral -->
+            {% if prescription.referred_to_doctor_id %}
+            <div class="alert alert-warning">
+                <strong>Referred to:</strong> Dr. {{ prescription.referred_doctor.full_name }} ({{ prescription.referred_doctor.specialization }})<br>
+                <strong>Reason:</strong> {{ prescription.referral_reason }}
+            </div>
+            {% endif %}
+
+            <!-- Digital Signature -->
+            <div class="text-center mt-5 p-4 border">
+                <h5>Doctor's Digital Signature</h5>
+                {% if prescription.digital_signature %}
+                    <img src="{{ prescription.digital_signature }}" alt="Signature" width="250">
+                    <p class="text-success mt-2"><strong>Signed on {{ prescription.signed_at.strftime('%d %B %Y, %I:%M %p') }}</strong></p>
+                {% else %}
+                    <p class="text-muted">Prescription will be digitally signed upon final submission</p>
+                {% endif %}
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="{{ url_for('doctor.patient_detail', patient_id=patient.id) }}" class="btn btn-secondary">Back</a>
+                {% if not prescription.digital_signature %}
+                <button class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#signatureModal">
+                    <i class="fas fa-signature"></i> Sign & Finalize E-Prescription
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Signature Modal -->
+<div class="modal fade" id="signatureModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Draw Your Signature</h5>
+            </div>
+            <div class="modal-body text-center">
+                <canvas id="signature-pad" width="380" height="200" style="border:2px solid #000; background:white;"></canvas>
+                <br><br>
+                <button id="clear" class="btn btn-warning">Clear</button>
+            </div>
+            <div class="modal-footer">
+                <form method="POST" action="{{ url_for('doctor.sign_prescription', prescription_id=prescription.id) }}">
+                    <input type="hidden" name="signature" id="signature-data">
+                    <button type="submit" class="btn btn-primary btn-lg">Sign & Generate PDF</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+<script>
+    var canvas = document.getElementById('signature-pad');
+    var signaturePad = new SignaturePad(canvas);
+
+    document.getElementById('clear').onclick = () => signaturePad.clear();
+
+    document.querySelector('form').onsubmit = function() {
+        if (signaturePad.isEmpty()) {
+            alert("Please provide your signature!");
+            return false;
+        }
+        document.getElementById('signature-data').value = signaturePad.toDataURL();
+    };
+</script>
+{% endblock %}

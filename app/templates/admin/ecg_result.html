@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}ECG Result - {{ result.ecg_patient.name }}{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center">
+            <a href="{{ url_for('ecg.all_results') }}" class="btn btn-outline-secondary me-3">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div>
+                <h3 class="mb-0">ECG Analysis Result</h3>
+                <p class="text-muted mb-0">
+                    Patient: {{ result.ecg_patient.name }} | 
+                    {{ result.analysis_date.strftime('%B %d, %Y %H:%M') if result.analysis_date else 'N/A' }}
+                </p>
+            </div>
+        </div>
+        <div>
+            <button onclick="window.print()" class="btn btn-outline-primary me-2">
+                <i class="fas fa-print me-1"></i>Print
+            </button>
+            <form action="{{ url_for('ecg.delete_result', result_id=result.id) }}" method="POST" class="d-inline"
+                  onsubmit="return confirm('Delete this result?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-outline-danger">
+                    <i class="fas fa-trash me-1"></i>Delete
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Risk Level Banner -->
+    {% set risk = result.risk_level|lower %}
+    <div class="alert 
+        {% if risk == 'normal' %}alert-success
+        {% elif risk == 'low' %}alert-info
+        {% elif risk == 'moderate' %}alert-warning
+        {% elif risk == 'high' %}alert-danger
+        {% else %}alert-secondary{% endif %} mb-4">
+        <div class="d-flex align-items-center">
+            <i class="fas 
+                {% if risk == 'normal' %}fa-check-circle
+                {% elif risk == 'low' %}fa-info-circle
+                {% elif risk == 'moderate' %}fa-exclamation-triangle
+                {% elif risk == 'high' %}fa-times-circle
+                {% else %}fa-question-circle{% endif %} fa-2x me-3"></i>
+            <div>
+                <h5 class="mb-1">{{ result.risk_level }} RISK</h5>
+                <p class="mb-0">{{ result.message }}</p>
+            </div>
+            <div class="ms-auto text-end">
+                <h4 class="mb-0">{{ "%.1f"|format(result.confidence * 100) }}%</h4>
+                <small>Confidence</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Patient Info & Stats -->
+        <div class="col-lg-4 mb-4">
+            <!-- Patient Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="fas fa-user text-primary me-2"></i>Patient Information</h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm mb-0">
+                        <tr>
+                            <td class="text-muted">Name</td>
+                            <td><strong>{{ result.ecg_patient.name }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Age</td>
+                            <td>{{ result.ecg_patient.age }} years</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Gender</td>
+                            <td>{{ result.ecg_patient.gender }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Test Date</td>
+                            <td>{{ result.analysis_date.strftime('%d/%m/%Y %H:%M') if result.analysis_date else 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Duration</td>
+                            <td>{{ "%.1f"|format(result.duration_seconds) }} seconds</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Beat Distribution -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="fas fa-chart-pie text-info me-2"></i>Beat Classification</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="beatChart" height="200"></canvas>
+                    
+                    <hr>
+                    
+                    {% set pcts = result.get_percentages() %}
+                    <div class="row text-center small">
+                        <div class="col">
+                            <span class="badge bg-success mb-1">N</span>
+                            <div><strong>{{ result.normal_beats }}</strong></div>
+                            <div class="text-muted">{{ pcts.N }}%</div>
+                        </div>
+                        <div class="col">
+                            <span class="badge bg-danger mb-1">V</span>
+                            <div><strong>{{ result.ventricular_beats }}</strong></div>
+                            <div class="text-muted">{{ pcts.V }}%</div>
+                        </div>
+                        <div class="col">
+                            <span class="badge bg-warning text-dark mb-1">S</span>
+                            <div><strong>{{ result.supraventricular_beats }}</strong></div>
+                            <div class="text-muted">{{ pcts.S }}%</div>
+                        </div>
+                        <div class="col">
+                            <span class="badge bg-info mb-1">F</span>
+                            <div><strong>{{ result.fusion_beats }}</strong></div>
+                            <div class="text-muted">{{ pcts.F }}%</div>
+                        </div>
+                        <div class="col">
+                            <span class="badge bg-secondary mb-1">Q</span>
+                            <div><strong>{{ result.unknown_beats }}</strong></div>
+                            <div class="text-muted">{{ pcts.Q }}%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-3 pt-3 border-top">
+                        <h4 class="text-primary mb-0">{{ result.total_beats }}</h4>
+                        <small class="text-muted">Total Heartbeats Analyzed</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ECG Waveform -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="fas fa-wave-square text-danger me-2"></i>ECG Waveform</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="ecgWaveform" height="300"></canvas>
+                </div>
+            </div>
+
+            <!-- Beat-by-Beat Analysis -->
+            {% if beat_predictions %}
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="fas fa-list text-primary me-2"></i>Beat-by-Beat Analysis</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>Beat #</th>
+                                    <th>Classification</th>
+                                    <th>Confidence</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for beat in beat_predictions %}
+                                <tr>
+                                    <td>{{ beat.beat_number }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if beat.class == 'N' %}bg-success
+                                            {% elif beat.class == 'V' %}bg-danger
+                                            {% elif beat.class == 'S' %}bg-warning text-dark
+                                            {% elif beat.class == 'F' %}bg-info
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ beat.class }}
+                                        </span>
+                                        <span class="ms-2 small text-muted">
+                                            {% if beat.class == 'N' %}Normal
+                                            {% elif beat.class == 'V' %}Ventricular
+                                            {% elif beat.class == 'S' %}Supraventricular
+                                            {% elif beat.class == 'F' %}Fusion
+                                            {% else %}Unknown{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar 
+                                                {% if beat.confidence > 0.8 %}bg-success
+                                                {% elif beat.confidence > 0.5 %}bg-warning
+                                                {% else %}bg-danger{% endif %}" 
+                                                 style="width: {{ beat.confidence * 100 }}%">
+                                                {{ "%.1f"|format(beat.confidence * 100) }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// ECG Waveform Chart
+const waveformData = {{ waveform_data | tojson }};
+
+if (waveformData && waveformData.length > 0) {
+    const ctx = document.getElementById('ecgWaveform').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: waveformData.map((_, i) => i),
+            datasets: [{
+                data: waveformData,
+                borderColor: '#dc3545',
+                borderWidth: 1,
+                pointRadius: 0,
+                tension: 0.1,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                x: {
+                    display: true,
+                    title: { display: true, text: 'Sample' },
+                    ticks: { maxTicksLimit: 10 }
+                },
+                y: {
+                    display: true,
+                    title: { display: true, text: 'Amplitude' }
+                }
+            }
+        }
+    });
+}
+
+// Beat Distribution Pie Chart
+const beatCtx = document.getElementById('beatChart').getContext('2d');
+new Chart(beatCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Normal (N)', 'Ventricular (V)', 'Supraventricular (S)', 'Fusion (F)', 'Unknown (Q)'],
+        datasets: [{
+            data: [
+                {{ result.normal_beats }},
+                {{ result.ventricular_beats }},
+                {{ result.supraventricular_beats }},
+                {{ result.fusion_beats }},
+                {{ result.unknown_beats }}
+            ],
+            backgroundColor: ['#28a745', '#dc3545', '#ffc107', '#17a2b8', '#6c757d']
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { boxWidth: 12, font: { size: 10 } }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

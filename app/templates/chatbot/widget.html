@@ -1,0 +1,504 @@
+<!-- Chatbot Widget - Can be included in base.html -->
+<div id="chatbotWidget" class="chatbot-widget">
+    <!-- Toggle Button -->
+    <button id="chatbotToggle" class="chatbot-toggle">
+        <i class="fas fa-comments"></i>
+        <span class="chatbot-badge" id="chatbotBadge" style="display: none;">1</span>
+    </button>
+
+    <!-- Chat Window -->
+    <div id="chatbotWindow" class="chatbot-window" style="display: none;">
+        <!-- Header -->
+        <div class="chatbot-header">
+            <div class="d-flex align-items-center">
+                <img src="/static/images/bot-avatar.png" alt="Bot" class="chatbot-avatar" 
+                     onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%234a90d9%22/><text x=%2250%22 y=%2265%22 font-size=%2250%22 text-anchor=%22middle%22 fill=%22white%22>🤖</text></svg>'">
+                <div>
+                    <h6 class="mb-0">Hospital Assistant</h6>
+                    <small class="text-white-50">Online</small>
+                </div>
+            </div>
+            <button class="chatbot-close" id="chatbotClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Messages -->
+        <div class="chatbot-messages" id="chatbotMessages">
+            <!-- Welcome message -->
+            <div class="bot-message">
+                <div class="message-content">
+                    <p>👋 Hello! I'm your Smart Hospital assistant. How can I help you today?</p>
+                    <div class="quick-replies">
+                        <button class="quick-reply" data-message="Find a doctor">Find a doctor</button>
+                        <button class="quick-reply" data-message="Hospital timings">Hospital timings</button>
+                        <button class="quick-reply" data-message="Book appointment">Book appointment</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input -->
+        <div class="chatbot-input">
+            <input type="text" id="chatbotInput" placeholder="Type your message..." autocomplete="off">
+            <button id="chatbotSend">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+.chatbot-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.chatbot-toggle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4a90d9 0%, #357abd 100%);
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(74, 144, 217, 0.4);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.chatbot-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(74, 144, 217, 0.5);
+}
+
+.chatbot-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #dc3545;
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chatbot-window {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 380px;
+    height: 550px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 40px rgb(249, 249, 249);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chatbot-header {
+    background: linear-gradient(135deg, #4a90d9 0%, #357abd 100%);
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chatbot-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    background: white;
+}
+
+.chatbot-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    opacity: 0.8;
+}
+
+.chatbot-close:hover {
+    opacity: 1;
+}
+
+.chatbot-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    background: #f8f9fa;
+}
+
+.bot-message, .user-message {
+    margin-bottom: 15px;
+    display: flex;
+}
+
+.bot-message {
+    justify-content: flex-start;
+}
+
+.user-message {
+    justify-content: flex-end;
+}
+
+.message-content {
+    max-width: 85%;
+    padding: 12px 15px;
+    border-radius: 15px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.bot-message .message-content {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 15px 15px 15px 5px;
+}
+
+.user-message .message-content {
+    background: #4a90d9;
+    color: white;
+    border-radius: 15px 15px 5px 15px;
+}
+
+.message-content p {
+    margin: 0;
+}
+
+.quick-replies {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.quick-reply {
+    background: #e8f4fd;
+    border: 1px solid #4a90d9;
+    color: #4a90d9;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.quick-reply:hover {
+    background: #4a90d9;
+    color: white;
+}
+
+.chatbot-input {
+    padding: 15px;
+    background: white;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    gap: 10px;
+}
+
+.chatbot-input input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 25px;
+    outline: none;
+    font-size: 14px;
+}
+
+.chatbot-input input:focus {
+    border-color: #4a90d9;
+}
+
+.chatbot-input button {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: #4a90d9;
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.chatbot-input button:hover {
+    background: #357abd;
+}
+
+/* Doctor/Department cards in chat */
+.doctor-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 10px;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.doctor-card:hover {
+    border-color: #4a90d9;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.doctor-card img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.doctor-card .info h6 {
+    margin: 0;
+    font-size: 14px;
+}
+
+.doctor-card .info p {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.typing-indicator {
+    display: flex;
+    gap: 4px;
+    padding: 10px 15px;
+}
+
+.typing-indicator span {
+    width: 8px;
+    height: 8px;
+    background: #999;
+    border-radius: 50%;
+    animation: typing 1.4s infinite;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-5px); }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .chatbot-window {
+        width: calc(100vw - 40px);
+        height: calc(100vh - 100px);
+        bottom: 70px;
+        right: -10px;
+    }
+}
+</style>
+
+<script>
+(function() {
+    const widget = document.getElementById('chatbotWidget');
+    const toggle = document.getElementById('chatbotToggle');
+    const window_ = document.getElementById('chatbotWindow');
+    const close = document.getElementById('chatbotClose');
+    const messages = document.getElementById('chatbotMessages');
+    const input = document.getElementById('chatbotInput');
+    const send = document.getElementById('chatbotSend');
+    
+    let sessionId = localStorage.getItem('chatbot_session') || generateSessionId();
+    localStorage.setItem('chatbot_session', sessionId);
+    
+    function generateSessionId() {
+        return 'session_' + Math.random().toString(36).substr(2, 9);
+    }
+    
+    // Toggle chat window
+    toggle.addEventListener('click', () => {
+        window_.style.display = window_.style.display === 'none' ? 'flex' : 'none';
+        if (window_.style.display === 'flex') {
+            input.focus();
+        }
+    });
+    
+    close.addEventListener('click', () => {
+        window_.style.display = 'none';
+    });
+    
+    // Send message
+    send.addEventListener('click', sendMessage);
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+    });
+    
+    // Quick replies
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('quick-reply')) {
+            const message = e.target.dataset.message;
+            input.value = message;
+            sendMessage();
+        }
+    });
+    
+    async function sendMessage() {
+        const text = input.value.trim();
+        if (!text) return;
+        
+        // Add user message
+        addMessage(text, 'user');
+        input.value = '';
+        
+        // Show typing indicator
+        showTyping();
+        
+        try {
+            const response = await fetch('/chatbot/message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: text,
+                    session_id: sessionId
+                })
+            });
+            
+            const data = await response.json();
+            hideTyping();
+            
+            if (data.response) {
+                handleBotResponse(data.response);
+            }
+        } catch (error) {
+            hideTyping();
+            addMessage("Sorry, I'm having trouble connecting. Please try again.", 'bot');
+        }
+    }
+    
+    function addMessage(text, type) {
+        const div = document.createElement('div');
+        div.className = type === 'user' ? 'user-message' : 'bot-message';
+        
+        const content = document.createElement('div');
+        content.className = 'message-content';
+        content.innerHTML = `<p>${text}</p>`;
+        
+        div.appendChild(content);
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+    }
+    
+    function handleBotResponse(response) {
+        const div = document.createElement('div');
+        div.className = 'bot-message';
+        
+        const content = document.createElement('div');
+        content.className = 'message-content';
+        
+        let html = `<p>${response.message || ''}</p>`;
+        
+        // Handle different response types
+        if (response.type === 'doctor_list' && response.doctors) {
+            response.doctors.forEach(doc => {
+                html += `
+                    <div class="doctor-card" onclick="window.location='/patient/doctor/${doc.id}'">
+                        <img src="${doc.profile_picture || '/static/images/default_avatar.png'}" alt="">
+                        <div class="info">
+                            <h6>${doc.name}</h6>
+                            <p>${doc.specialization}</p>
+                            <p>⭐ ${doc.rating || 'New'}</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        
+        if (response.type === 'doctor_profile' && response.doctor) {
+            const doc = response.doctor;
+            html += `
+                <div class="doctor-card" onclick="window.location='/patient/doctor/${doc.id}'">
+                    <img src="${doc.profile_picture || '/static/images/default_avatar.png'}" alt="">
+                    <div class="info">
+                        <h6>Dr. ${doc.name}</h6>
+                        <p>${doc.specialization}</p>
+                        <p>⭐ ${doc.rating || 0} (${doc.total_reviews} reviews)</p>
+                        <p>💼 ${doc.experience}</p>
+                        <p>💰 ₹${doc.consultation_fee}</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        if (response.suggestions) {
+            html += '<div class="quick-replies">';
+            response.suggestions.forEach(s => {
+                html += `<button class="quick-reply" data-message="${s}">${s}</button>`;
+            });
+            html += '</div>';
+        }
+        
+        if (response.action && response.action.type === 'link') {
+            html += `
+                <div class="quick-replies">
+                    <a href="${response.action.url}" class="quick-reply" style="text-decoration: none;">
+                        ${response.action.text} →
+                    </a>
+                </div>
+            `;
+        }
+        
+        content.innerHTML = html;
+        div.appendChild(content);
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+    }
+    
+    function showTyping() {
+        const div = document.createElement('div');
+        div.className = 'bot-message';
+        div.id = 'typingIndicator';
+        div.innerHTML = `
+            <div class="message-content">
+                <div class="typing-indicator">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+        `;
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+    }
+    
+    function hideTyping() {
+        const typing = document.getElementById('typingIndicator');
+        if (typing) typing.remove();
+    }
+})();
+</script>

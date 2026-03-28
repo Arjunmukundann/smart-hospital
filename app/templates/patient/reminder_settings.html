@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}Reminder Settings - Smart Hospital{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-bell me-2"></i>Medicine Reminder Settings</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        Configure how and when you want to receive medicine reminders.
+                    </p>
+                    
+                    <form method="POST" action="{{ url_for('admin.reminder_settings') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <!-- Enable/Disable -->
+                        <div class="mb-4">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="isActive" 
+                                       name="is_active" {{ 'checked' if not settings or settings.is_active else '' }}>
+                                <label class="form-check-label fw-bold" for="isActive">
+                                    Enable Medicine Reminders
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <!-- Notification Channels -->
+                        <h5 class="mb-3"><i class="fas fa-paper-plane me-2"></i>Notification Channels</h5>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="emailEnabled" 
+                                           name="email_enabled" {{ 'checked' if not settings or settings.email_enabled else '' }}>
+                                    <label class="form-check-label" for="emailEnabled">
+                                        <i class="fas fa-envelope me-2"></i>Email Reminders
+                                    </label>
+                                </div>
+                                <input type="email" class="form-control mt-2" name="reminder_email" 
+                                       placeholder="Email address"
+                                       value="{{ settings.reminder_email if settings and settings.reminder_email else patient.email or '' }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="smsEnabled" 
+                                           name="sms_enabled" {{ 'checked' if settings and settings.sms_enabled else '' }}>
+                                    <label class="form-check-label" for="smsEnabled">
+                                        <i class="fas fa-sms me-2"></i>SMS Reminders
+                                    </label>
+                                </div>
+                                <input type="tel" class="form-control mt-2" name="reminder_phone" 
+                                       placeholder="Phone number"
+                                       value="{{ settings.reminder_phone if settings and settings.reminder_phone else patient.phone or '' }}">
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <!-- Reminder Times -->
+                        <h5 class="mb-3"><i class="fas fa-clock me-2"></i>Reminder Times</h5>
+                        <p class="text-muted small">Set when you want to receive reminders for each time of day.</p>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6 col-lg-3 mb-3">
+                                <label class="form-label">🌅 Morning</label>
+                                <input type="time" class="form-control" name="morning_time" 
+                                       value="{{ settings.morning_time if settings else '08:00' }}">
+                            </div>
+                            <div class="col-md-6 col-lg-3 mb-3">
+                                <label class="form-label">☀️ Afternoon</label>
+                                <input type="time" class="form-control" name="afternoon_time" 
+                                       value="{{ settings.afternoon_time if settings else '13:00' }}">
+                            </div>
+                            <div class="col-md-6 col-lg-3 mb-3">
+                                <label class="form-label">🌆 Evening</label>
+                                <input type="time" class="form-control" name="evening_time" 
+                                       value="{{ settings.evening_time if settings else '18:00' }}">
+                            </div>
+                            <div class="col-md-6 col-lg-3 mb-3">
+                                <label class="form-label">🌙 Night</label>
+                                <input type="time" class="form-control" name="night_time" 
+                                       value="{{ settings.night_time if settings else '21:00' }}">
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>Save Settings
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- Test Reminders -->
+                    <h5 class="mb-3"><i class="fas fa-vial me-2"></i>Test Reminders</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <form method="POST" action="{{ url_for('patient.test_reminder') }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="type" value="email">
+                                <input type="email" name="email" class="form-control mb-2" 
+                                       placeholder="Test email address" value="{{ patient.email }}">
+                                <button type="submit" class="btn btn-outline-primary w-100">
+                                    <i class="fas fa-envelope me-2"></i>Send Test Email
+                                </button>
+                            </form>
+                        </div>
+                        <div class="col-md-6">
+                            <form method="POST" action="{{ url_for('patient.test_reminder') }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="type" value="sms">
+                                <input type="tel" name="phone" class="form-control mb-2" 
+                                       placeholder="Test phone number" value="{{ patient.phone }}">
+                                <button type="submit" class="btn btn-outline-success w-100">
+                                    <i class="fas fa-sms me-2"></i>Send Test SMS
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Reminder Logs -->
+            {% if recent_logs %}
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Reminder History</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Timing</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in recent_logs %}
+                                <tr>
+                                    <td>{{ log.created_at.strftime('%b %d, %H:%M') }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'primary' if log.reminder_type == 'email' else 'success' }}">
+                                            {{ log.reminder_type|upper }}
+                                        </span>
+                                    </td>
+                                    <td>{{ log.timing|title }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if log.status == 'sent' else 'danger' if log.status == 'failed' else 'warning' }}">
+                                            {{ log.status|title }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

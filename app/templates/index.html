@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block title %}Smart Hospital Platform - Home{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center min-vh-75">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">
+                    <span class="text-gradient">Smart Hospital</span>
+                    <br>Management Platform
+                </h1>
+                <p class="lead mb-4">
+                    Revolutionizing healthcare with AI-powered prescription safety,
+                    intelligent report analysis, and comprehensive hospital management.
+                </p>
+                <div class="hero-buttons">
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.is_doctor() %}
+                            <a href="{{ url_for('doctor.dashboard') }}" class="btn btn-primary btn-lg me-3">
+                                <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                            </a>
+                        {% elif current_user.is_patient() %}
+                            <a href="{{ url_for('patient.dashboard') }}" class="btn btn-primary btn-lg me-3">
+                                <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                            </a>
+                        {% elif current_user.is_admin() %}
+                            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary btn-lg me-3">
+                                <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg me-3">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </a>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-user-plus me-2"></i>Register
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <div class="hero-icon floating">
+                    <i class="fas fa-hospital"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Powerful Features</h2>
+            <p class="text-muted">Everything you need for modern hospital management</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon bg-primary-gradient">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <h5>Doctor Module</h5>
+                    <p class="text-muted">Digital prescriptions, patient management, and real-time safety alerts.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon bg-success-gradient">
+                        <i class="fas fa-user-injured"></i>
+                    </div>
+                    <h5>Patient Portal</h5>
+                    <p class="text-muted">Access prescriptions, simplified medical summaries, and meal safety checks.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon bg-info-gradient">
+                        <i class="fas fa-hospital-user"></i>
+                    </div>
+                    <h5>Admin Dashboard</h5>
+                    <p class="text-muted">Analytics, inventory management, and predictive insights.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon bg-danger-gradient">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h5>Safety Checks</h5>
+                    <p class="text-muted">Allergy alerts, drug interactions, and food-medicine warnings.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon bg-warning-gradient">
+                        <i class="fas fa-file-medical-alt"></i>
+                    </div>
+                    <h5>OCR & Analysis</h5>
+                    <p class="text-muted">Extract and analyze data from handwritten prescriptions and reports.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon bg-secondary-gradient">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h5>ML Predictions</h5>
+                    <p class="text-muted">Predict patient inflow and optimize resource allocation.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="how-it-works-section py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">How It Works</h2>
+            <p class="text-muted">Simple steps to get started</p>
+        </div>
+        <div class="row">
+            <div class="col-md-4 text-center mb-4">
+                <div class="step-circle">1</div>
+                <h5 class="mt-3">Register & Login</h5>
+                <p class="text-muted">Create your account and choose your role (Doctor, Patient, or Admin).</p>
+            </div>
+            <div class="col-md-4 text-center mb-4">
+                <div class="step-circle">2</div>
+                <h5 class="mt-3">Access Features</h5>
+                <p class="text-muted">Use role-specific features: prescriptions, reports, analytics, and more.</p>
+            </div>
+            <div class="col-md-4 text-center mb-4">
+                <div class="step-circle">3</div>
+                <h5 class="mt-3">Stay Safe</h5>
+                <p class="text-muted">Get real-time safety alerts and intelligent recommendations.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="stats-section py-5 bg-gradient-primary text-white">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-6 col-md-3 mb-4">
+                <h2 class="display-4 fw-bold">500+</h2>
+                <p class="mb-0">Patients Served</p>
+            </div>
+            <div class="col-6 col-md-3 mb-4">
+                <h2 class="display-4 fw-bold">50+</h2>
+                <p class="mb-0">Doctors</p>
+            </div>
+            <div class="col-6 col-md-3 mb-4">
+                <h2 class="display-4 fw-bold">1000+</h2>
+                <p class="mb-0">Prescriptions</p>
+            </div>
+            <div class="col-6 col-md-3 mb-4">
+                <h2 class="display-4 fw-bold">99%</h2>
+                <p class="mb-0">Safety Rate</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section py-5 bg-light">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-4">Ready to Transform Your Hospital?</h2>
+        <p class="lead text-muted mb-4">Join thousands of healthcare professionals using Smart Hospital Platform.</p>
+        {% if not current_user.is_authenticated %}
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-rocket me-2"></i>Get Started Now
+        </a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

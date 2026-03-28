@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}ECG Demo Analysis{% endblock %}
+
+{% block extra_css %}
+<style>
+    .demo-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .demo-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .sample-option {
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 20px;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    .sample-option:hover {
+        border-color: #667eea;
+        background: #f8f9ff;
+    }
+
+    .sample-option.selected {
+        border-color: #667eea;
+        background: #eff2ff;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+    }
+
+    .sample-option input {
+        display: none;
+    }
+
+    .sample-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+
+    .sample-icon.normal {
+        background: #e8f5e9;
+        color: #4caf50;
+    }
+
+    .sample-icon.afib {
+        background: #fff3e0;
+        color: #ff9800;
+    }
+
+    .sample-icon.vtach {
+        background: #ffebee;
+        color: #f44336;
+    }
+
+    .sample-icon.brady {
+        background: #e3f2fd;
+        color: #2196f3;
+    }
+
+    .ecg-animation {
+        height: 80px;
+        background: linear-gradient(to right, #667eea, #764ba2);
+        border-radius: 10px;
+        margin-top: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ecg-animation::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 40'%3E%3Cpath d='M0,20 L20,20 L25,5 L30,35 L35,15 L40,25 L45,20 L100,20' stroke='rgba(255,255,255,0.8)' fill='none' stroke-width='2'/%3E%3C/svg%3E") repeat-x;
+        background-size: 100px 40px;
+        animation: ecg-move 1.5s linear infinite;
+    }
+
+    @keyframes ecg-move {
+        0% { background-position: 0 0; }
+        100% { background-position: 100px 0; }
+    }
+
+    .patient-select-section {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('doctor.dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('doctor.ecg_detection') }}">ECG Detection</a></li>
+            <li class="breadcrumb-item active">Demo Analysis</li>
+        </ol>
+    </nav>
+
+    <div class="demo-container">
+        <div class="demo-card">
+            <h3 class="mb-2"><i class="fas fa-play-circle text-danger me-2"></i>ECG Analysis Demo</h3>
+            <p class="text-muted mb-4">Select a sample ECG type to see how the AI arrhythmia detection system works.</p>
+
+            <form method="POST" action="{{ url_for('doctor.ecg_demo') }}" id="demoForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <!-- Patient Selection (Optional) -->
+                <div class="patient-select-section">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-user me-2 text-primary"></i>Link to Patient (Optional)
+                    </label>
+                    <select class="form-select" name="patient_id">
+                        <option value="">-- No patient (Demo only) --</option>
+                        {% for patient in patients %}
+                        <option value="{{ patient.id }}">{{ patient.full_name }} ({{ patient.patient_id }})</option>
+                        {% endfor %}
+                    </select>
+                    <small class="text-muted">If selected, the result will be saved to the patient's record.</small>
+                </div>
+
+                <!-- Sample Type Selection -->
+                <h6 class="mb-3"><i class="fas fa-heartbeat me-2"></i>Select ECG Sample Type</h6>
+                
+                <label class="sample-option selected" onclick="selectSample(this, 'normal')">
+                    <input type="radio" name="sample_type" value="normal" checked>
+                    <div class="d-flex align-items-center">
+                        <div class="sample-icon normal">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">Normal Sinus Rhythm</h5>
+                            <p class="mb-0 text-muted small">Regular heart rhythm, 60-100 BPM, healthy cardiac function</p>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="sample-option" onclick="selectSample(this, 'afib')">
+                    <input type="radio" name="sample_type" value="afib">
+                    <div class="d-flex align-items-center">
+                        <div class="sample-icon afib">
+                            <i class="fas fa-wave-square"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">Atrial Fibrillation</h5>
+                            <p class="mb-0 text-muted small">Irregular heartbeat, rapid atrial rate, common arrhythmia</p>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="sample-option" onclick="selectSample(this, 'vtach')">
+                    <input type="radio" name="sample_type" value="vtach">
+                    <div class="d-flex align-items-center">
+                        <div class="sample-icon vtach">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">Ventricular Tachycardia</h5>
+                            <p class="mb-0 text-muted small">Fast heart rate from ventricles, potentially life-threatening</p>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="sample-option" onclick="selectSample(this, 'bradycardia')">
+                    <input type="radio" name="sample_type" value="bradycardia">
+                    <div class="d-flex align-items-center">
+                        <div class="sample-icon brady">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">Sinus Bradycardia</h5>
+                            <p class="mb-0 text-muted small">Slow heart rate below 60 BPM, may indicate conduction issues</p>
+                        </div>
+                    </div>
+                </label>
+
+                <!-- ECG Animation -->
+                <div class="ecg-animation"></div>
+
+                <!-- Action Buttons -->
+                <div class="mt-4 d-flex gap-3">
+                    <button type="submit" class="btn btn-primary btn-lg flex-grow-1" id="submitBtn">
+                        <i class="fas fa-play me-2"></i>Run Analysis
+                    </button>
+                    <a href="{{ url_for('doctor.ecg_detection') }}" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-arrow-left me-2"></i>Back
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function selectSample(element, value) {
+    // Remove selected class from all options
+    document.querySelectorAll('.sample-option').forEach(opt => {
+        opt.classList.remove('selected');
+    });
+    // Add selected class to clicked option
+    element.classList.add('selected');
+    // Check the radio button
+    element.querySelector('input').checked = true;
+}
+
+// Form submission loading state
+document.getElementById('demoForm').addEventListener('submit', function() {
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Analyzing...';
+});
+</script>
+{% endblock %}

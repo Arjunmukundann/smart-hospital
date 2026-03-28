@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Referrals - Doctor Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-share-square text-primary"></i> Referrals</h2>
+            <p class="text-muted mb-0">Manage patient referrals</p>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link {{ 'active' if tab == 'received' }}" 
+               href="{{ url_for('doctor.referrals', tab='received') }}">
+                <i class="fas fa-inbox"></i> Received
+                {% if pending_count > 0 %}
+                <span class="badge bg-danger">{{ pending_count }}</span>
+                {% endif %}
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ 'active' if tab == 'sent' }}" 
+               href="{{ url_for('doctor.referrals', tab='sent') }}">
+                <i class="fas fa-paper-plane"></i> Sent
+            </a>
+        </li>
+    </ul>
+
+    <!-- Referrals List -->
+    <div class="card">
+        <div class="card-body p-0">
+            {% if referrals.items %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Referral #</th>
+                            <th>Patient</th>
+                            {% if tab == 'received' %}
+                            <th>From Doctor</th>
+                            {% else %}
+                            <th>To Doctor</th>
+                            {% endif %}
+                            <th>Reason</th>
+                            <th>Urgency</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for referral in referrals.items %}
+                        <tr>
+                            <td><code>{{ referral.referral_number }}</code></td>
+                            <td>
+                                <strong>{{ referral.patient.full_name if referral.patient else 'N/A' }}</strong>
+                                <br>
+                                <small class="text-muted">{{ referral.patient.patient_id if referral.patient else '' }}</small>
+                            </td>
+                            {% if tab == 'received' %}
+                            <td>
+                                Dr. {{ referral.referring_doctor.full_name if referral.referring_doctor else 'N/A' }}
+                                <br>
+                                <small class="text-muted">{{ referral.referring_doctor.specialization if referral.referring_doctor else '' }}</small>
+                            </td>
+                            {% else %}
+                            <td>
+                                Dr. {{ referral.referred_to_doctor.full_name if referral.referred_to_doctor else 'N/A' }}
+                                <br>
+                                <small class="text-muted">{{ referral.referred_to_doctor.specialization if referral.referred_to_doctor else '' }}</small>
+                            </td>
+                            {% endif %}
+                            <td>
+                                <span title="{{ referral.reason }}">
+                                    {{ referral.reason[:50] }}{{ '...' if referral.reason|length > 50 else '' }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if referral.urgency == 'emergency' %}
+                                <span class="badge bg-danger">Emergency</span>
+                                {% elif referral.urgency == 'urgent' %}
+                                <span class="badge bg-warning">Urgent</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Normal</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if referral.status == 'pending' %}
+                                <span class="badge bg-warning">Pending</span>
+                                {% elif referral.status == 'accepted' %}
+                                <span class="badge bg-info">Accepted</span>
+                                {% elif referral.status == 'completed' %}
+                                <span class="badge bg-success">Completed</span>
+                                {% elif referral.status == 'declined' %}
+                                <span class="badge bg-danger">Declined</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ referral.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ referral.created_at.strftime('%d %b %Y') }}</td>
+                            <td>
+                                <a href="{{ url_for('doctor.view_referral', referral_id=referral.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                                {% if tab == 'received' and referral.status == 'pending' %}
+                                <button class="btn btn-sm btn-success" data-bs-toggle="modal" 
+                                        data-bs-target="#acceptModal{{ referral.id }}">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" 
+                                        data-bs-target="#declineModal{{ referral.id }}">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <!-- Accept Modal -->
+                        {% if tab == 'received' and referral.status == 'pending' %}
+                        <div class="modal fade" id="acceptModal{{ referral.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Accept Referral</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form method="POST" action="{{ url_for('doctor.accept_referral', referral_id=referral.id) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <div class="modal-body">
+                                            <p>Accept referral for patient <strong>{{ referral.patient.full_name if referral.patient else 'N/A' }}</strong>?</p>
+                                            <p class="text-muted">You can then schedule an appointment with the patient.</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-success">Accept Referral</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Decline Modal -->
+                        <div class="modal fade" id="declineModal{{ referral.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Decline Referral</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form method="POST" action="{{ url_for('doctor.decline_referral', referral_id=referral.id) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <div class="modal-body">
+                                            <p>Decline referral for patient <strong>{{ referral.patient.full_name if referral.patient else 'N/A' }}</strong>?</p>
+                                            <div class="mb-3">
+                                                <label class="form-label">Reason for declining (required)</label>
+                                                <textarea name="decline_reason" class="form-control" rows="3" required
+                                                          placeholder="Please provide a reason..."></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-danger">Decline Referral</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-share-square fa-4x text-muted mb-3"></i>
+                <h5>No {{ tab }} referrals</h5>
+                <p class="text-muted">
+                    {% if tab == 'received' %}
+                    You haven't received any referrals yet.
+                    {% else %}
+                    You haven't sent any referrals yet.
+                    {% endif %}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Pagination -->
+        {% if referrals.pages > 1 %}
+        <div class="card-footer">
+            <nav>
+                <ul class="pagination mb-0 justify-content-center">
+                    {% if referrals.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('doctor.referrals', tab=tab, page=referrals.prev_num) }}">Previous</a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in referrals.iter_pages() %}
+                        {% if page_num %}
+                        <li class="page-item {{ 'active' if page_num == referrals.page }}">
+                            <a class="page-link" href="{{ url_for('doctor.referrals', tab=tab, page=page_num) }}">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if referrals.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('doctor.referrals', tab=tab, page=referrals.next_num) }}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

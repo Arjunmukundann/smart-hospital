@@ -1,0 +1,51 @@
+<!-- Alert Components for reuse -->
+
+{% macro alert_card(alert, show_actions=False) %}
+<div class="alert-card severity-{{ alert.severity }}">
+    <div class="alert-header">
+        <span class="alert-type-badge badge bg-{{ 'danger' if alert.severity == 'critical' else 'warning' if alert.severity == 'high' else 'info' }}">
+            <i class="fas {{ 'fa-skull-crossbones' if alert.severity == 'critical' else 'fa-exclamation-triangle' if alert.severity == 'high' else 'fa-info-circle' }}"></i>
+            {{ alert.alert_type|replace('_', ' ')|title }}
+        </span>
+        <span class="severity-badge text-{{ 'danger' if alert.severity == 'critical' else 'warning' if alert.severity == 'high' else 'secondary' }}">
+            {{ alert.severity|upper }}
+        </span>
+    </div>
+    <div class="alert-body">
+        <p class="mb-2">
+            <strong>Medicine:</strong> {{ alert.medicine_name }}<br>
+            <strong>Conflict:</strong> {{ alert.conflicting_item }}
+        </p>
+        <p class="alert-description">{{ alert.description }}</p>
+        <p class="alert-recommendation text-info">
+            <i class="fas fa-lightbulb me-1"></i>
+            <strong>Recommendation:</strong> {{ alert.recommendation }}
+        </p>
+    </div>
+    {% if show_actions %}
+    <div class="alert-actions">
+        <div class="form-check">
+            <input class="form-check-input alert-acknowledge" type="checkbox" id="ack-{{ alert.id }}">
+            <label class="form-check-label" for="ack-{{ alert.id }}">
+                I acknowledge this alert
+            </label>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro stat_card(title, value, icon, color='primary', subtitle='') %}
+<div class="stat-card bg-{{ color }}-gradient">
+    <div class="stat-icon">
+        <i class="fas {{ icon }}"></i>
+    </div>
+    <div class="stat-content">
+        <h3 class="stat-value">{{ value }}</h3>
+        <p class="stat-title">{{ title }}</p>
+        {% if subtitle %}
+        <small class="stat-subtitle">{{ subtitle }}</small>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}

@@ -1,0 +1,557 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Report - {{ patient.full_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .upload-area {
+        border: 3px dashed #dee2e6;
+        border-radius: 15px;
+        padding: 40px;
+        text-align: center;
+        background: #f8f9fa;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+    }
+    
+    .upload-area:hover {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.05);
+    }
+    
+    .upload-area.dragover {
+        border-color: #28a745;
+        background: rgba(40, 167, 69, 0.1);
+    }
+    
+    .upload-area.has-file {
+        border-color: #28a745;
+        border-style: solid;
+        background: rgba(40, 167, 69, 0.05);
+    }
+    
+    .upload-icon {
+        font-size: 4rem;
+        color: #adb5bd;
+        margin-bottom: 15px;
+    }
+    
+    .upload-area.has-file .upload-icon {
+        color: #28a745;
+    }
+    
+    .file-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+    
+    .file-preview {
+        display: none;
+        margin-top: 20px;
+    }
+    
+    .file-preview.show {
+        display: block;
+    }
+    
+    .file-info {
+        background: white;
+        border: 1px solid #28a745;
+        border-radius: 10px;
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .file-info .file-icon {
+        font-size: 2.5rem;
+        color: #667eea;
+    }
+    
+    .file-info .file-details {
+        flex-grow: 1;
+        text-align: left;
+    }
+    
+    .file-info .file-name {
+        font-weight: bold;
+        color: #333;
+        word-break: break-all;
+    }
+    
+    .file-info .file-size {
+        color: #666;
+        font-size: 0.85rem;
+    }
+    
+    .file-info .remove-file {
+        color: #dc3545;
+        cursor: pointer;
+        font-size: 1.5rem;
+    }
+    
+    .file-info .remove-file:hover {
+        color: #c82333;
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    @media (max-width: 768px) {
+        .quick-actions {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .quick-action-card {
+        background: white;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .quick-action-card:hover {
+        border-color: #667eea;
+        transform: translateY(-3px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .quick-action-card .icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+        font-size: 1.3rem;
+    }
+
+    .quick-action-card .icon.ecg {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+
+    .quick-action-card .icon.manual {
+        background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);
+        color: white;
+    }
+
+    .quick-action-card .icon.upload {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+    }
+
+    .quick-action-card h6 {
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .quick-action-card p {
+        font-size: 0.8rem;
+        color: #666;
+        margin: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Patient Info Card -->
+            <div class="card shadow-sm mb-4 border-primary">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="fas fa-user-circle fa-3x text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">{{ patient.full_name }}</h5>
+                            <small class="text-muted">
+                                {{ patient.patient_id }} | {{ patient.age }} years | {{ patient.gender }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <a href="{{ url_for('doctor.ecg_demo') }}?patient_id={{ patient.id }}" class="quick-action-card">
+                    <div class="icon ecg">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <h6>ECG Analysis</h6>
+                    <p>AI-powered arrhythmia detection</p>
+                </a>
+                <a href="{{ url_for('doctor.manual_report', patient_id=patient.id) }}" class="quick-action-card">
+                    <div class="icon manual">
+                        <i class="fas fa-keyboard"></i>
+                    </div>
+                    <h6>Manual Entry</h6>
+                    <p>Enter test values manually</p>
+                </a>
+                <a href="#uploadSection" class="quick-action-card">
+                    <div class="icon upload">
+                        <i class="fas fa-file-upload"></i>
+                    </div>
+                    <h6>Upload Report</h6>
+                    <p>Upload PDF/Image for OCR</p>
+                </a>
+            </div>
+            
+            <!-- Upload Form Card -->
+            <div class="card shadow-sm" id="uploadSection">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-file-upload me-2"></i>Upload Medical Report
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" 
+                          action="{{ url_for('doctor.report_upload', patient_id=patient.id) }}" 
+                          enctype="multipart/form-data" 
+                          id="uploadForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <!-- Report Type -->
+                        <div class="mb-4">
+                            <label for="report_type" class="form-label fw-bold">
+                                <i class="fas fa-clipboard-list me-2 text-primary"></i>Report Type *
+                            </label>
+                            <select class="form-select form-select-lg" id="report_type" name="report_type" required>
+                                <option value="">-- Select Report Type --</option>
+                                <option value="blood_test">🩸 Blood Test (CBC, LFT, KFT, etc.)</option>
+                                <option value="urine_test">🧪 Urine Test</option>
+                                <option value="xray">🦴 X-Ray</option>
+                                <option value="mri">🧠 MRI Scan</option>
+                                <option value="ct_scan">📷 CT Scan</option>
+                                <option value="ecg">❤️ ECG / EKG</option>
+                                <option value="echo">💓 Echocardiogram</option>
+                                <option value="ultrasound">🔊 Ultrasound</option>
+                                <option value="thyroid">🦋 Thyroid Test</option>
+                                <option value="diabetes">🍬 Diabetes Panel (HbA1c, Glucose)</option>
+                                <option value="lipid">🫀 Lipid Profile</option>
+                                <option value="general">📋 General / Other</option>
+                            </select>
+                        </div>
+
+                        <!-- ECG AI Analysis Prompt -->
+                        <div class="alert alert-info d-none" id="ecgPrompt">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-robot fa-2x me-3"></i>
+                                <div class="flex-grow-1">
+                                    <strong>ECG Selected!</strong>
+                                    <p class="mb-2">Would you like to use AI-powered ECG arrhythmia detection?</p>
+                                    <a href="{{ url_for('doctor.ecg_demo') }}?patient_id={{ patient.id }}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-heartbeat me-1"></i>Use AI ECG Analysis
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Report Date -->
+                        <div class="mb-4">
+                            <label for="report_date" class="form-label fw-bold">
+                                <i class="fas fa-calendar-alt me-2 text-primary"></i>Report Date *
+                            </label>
+                            <input type="date" 
+                                   class="form-control form-control-lg" 
+                                   id="report_date" 
+                                   name="report_date" 
+                                   value="{{ today.strftime('%Y-%m-%d') if today else '' }}"
+                                   max="{{ today.strftime('%Y-%m-%d') if today else '' }}"
+                                   required>
+                            <div class="form-text">Select the date when the test was conducted</div>
+                        </div>
+                        
+                        <!-- File Upload Area -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-file-medical me-2 text-primary"></i>Report File *
+                            </label>
+                            
+                            <div class="upload-area" id="uploadArea">
+                                <input type="file" 
+                                       class="file-input" 
+                                       id="report_file" 
+                                       name="report_file" 
+                                       accept=".pdf,.png,.jpg,.jpeg"
+                                       required>
+                                
+                                <div id="uploadPlaceholder">
+                                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                    <h5>Drag & Drop or Click to Upload</h5>
+                                    <p class="text-muted mb-0">
+                                        Supported formats: PDF, PNG, JPG, JPEG
+                                    </p>
+                                    <p class="text-muted">
+                                        <small>Maximum file size: 16 MB</small>
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <!-- File Preview -->
+                            <div class="file-preview" id="filePreview">
+                                <div class="file-info">
+                                    <i class="fas fa-file-alt file-icon" id="fileIcon"></i>
+                                    <div class="file-details">
+                                        <div class="file-name" id="fileName">-</div>
+                                        <div class="file-size" id="fileSize">-</div>
+                                    </div>
+                                    <i class="fas fa-times-circle remove-file" id="removeFile" title="Remove file"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Info Box -->
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle me-2"></i>What happens next?</h6>
+                            <ul class="mb-0 small">
+                                <li>The report will be processed using OCR to extract text</li>
+                                <li>AI will analyze the report and identify key findings</li>
+                                <li>Abnormal values will be highlighted automatically</li>
+                                <li>A summary will be generated for easy understanding</li>
+                            </ul>
+                        </div>
+
+                        <!-- Alternative Options -->
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="card border-warning h-100">
+                                    <div class="card-body">
+                                        <h6 class="text-warning">
+                                            <i class="fas fa-keyboard me-2"></i>OCR Not Working?
+                                        </h6>
+                                        <p class="small text-muted mb-2">
+                                            If automatic analysis doesn't extract values correctly.
+                                        </p>
+                                        <a href="{{ url_for('doctor.manual_report', patient_id=patient.id) }}" 
+                                           class="btn btn-outline-warning btn-sm">
+                                            <i class="fas fa-edit me-2"></i>Enter Values Manually
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-danger h-100">
+                                    <div class="card-body">
+                                        <h6 class="text-danger">
+                                            <i class="fas fa-heartbeat me-2"></i>ECG Analysis
+                                        </h6>
+                                        <p class="small text-muted mb-2">
+                                            Use AI for arrhythmia detection from ECG data.
+                                        </p>
+                                        <a href="{{ url_for('doctor.ecg_demo') }}?patient_id={{ patient.id }}" 
+                                           class="btn btn-outline-danger btn-sm">
+                                            <i class="fas fa-heart me-2"></i>Analyze ECG
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex gap-3 mt-4">
+                            <a href="{{ url_for('doctor.patient_detail', patient_id=patient.id) }}" 
+                               class="btn btn-outline-secondary btn-lg flex-grow-1">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg flex-grow-1" id="submitBtn">
+                                <i class="fas fa-upload me-2"></i>Upload & Analyze
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('report_file');
+    const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+    const filePreview = document.getElementById('filePreview');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const fileIcon = document.getElementById('fileIcon');
+    const removeFile = document.getElementById('removeFile');
+    const submitBtn = document.getElementById('submitBtn');
+    const form = document.getElementById('uploadForm');
+    const reportType = document.getElementById('report_type');
+    const ecgPrompt = document.getElementById('ecgPrompt');
+    
+    // Show ECG prompt when ECG type selected
+    reportType.addEventListener('change', function() {
+        if (this.value === 'ecg') {
+            ecgPrompt.classList.remove('d-none');
+        } else {
+            ecgPrompt.classList.add('d-none');
+        }
+    });
+    
+    // Prevent default drag behaviors
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    // Highlight drop area when item is dragged over it
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight(e) {
+        uploadArea.classList.add('dragover');
+    }
+    
+    function unhighlight(e) {
+        uploadArea.classList.remove('dragover');
+    }
+    
+    // Handle dropped files
+    uploadArea.addEventListener('drop', handleDrop, false);
+    
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        
+        if (files.length > 0) {
+            fileInput.files = files;
+            handleFiles(files);
+        }
+    }
+    
+    // Handle file input change
+    fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            handleFiles(this.files);
+        }
+    });
+    
+    function handleFiles(files) {
+        const file = files[0];
+        
+        // Validate file type
+        const allowedTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('Invalid file type. Please upload PDF, PNG, or JPG files only.');
+            clearFile();
+            return;
+        }
+        
+        // Validate file size (16 MB)
+        if (file.size > 16 * 1024 * 1024) {
+            alert('File is too large. Maximum size is 16 MB.');
+            clearFile();
+            return;
+        }
+        
+        // Show file info
+        fileName.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+        
+        // Set icon based on file type
+        if (file.type === 'application/pdf') {
+            fileIcon.className = 'fas fa-file-pdf file-icon';
+            fileIcon.style.color = '#dc3545';
+        } else {
+            fileIcon.className = 'fas fa-file-image file-icon';
+            fileIcon.style.color = '#28a745';
+        }
+        
+        // Update UI
+        uploadArea.classList.add('has-file');
+        uploadPlaceholder.style.display = 'none';
+        filePreview.classList.add('show');
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    // Remove file
+    removeFile.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        clearFile();
+    });
+    
+    function clearFile() {
+        fileInput.value = '';
+        uploadArea.classList.remove('has-file');
+        uploadPlaceholder.style.display = 'block';
+        filePreview.classList.remove('show');
+    }
+    
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        // Validate file is selected
+        if (!fileInput.files || fileInput.files.length === 0) {
+            e.preventDefault();
+            alert('Please select a file to upload.');
+            return false;
+        }
+        
+        // Validate report type
+        const reportTypeVal = document.getElementById('report_type').value;
+        if (!reportTypeVal) {
+            e.preventDefault();
+            alert('Please select a report type.');
+            return false;
+        }
+        
+        // Validate report date
+        const reportDate = document.getElementById('report_date').value;
+        if (!reportDate) {
+            e.preventDefault();
+            alert('Please select a report date.');
+            return false;
+        }
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Uploading & Analyzing...';
+        
+        // Form will submit normally
+        return true;
+    });
+});
+</script>
+{% endblock %}

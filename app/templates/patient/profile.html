@@ -1,0 +1,661 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - Smart Hospital{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 0;
+        margin-bottom: 30px;
+        border-radius: 0 0 20px 20px;
+    }
+    .profile-picture-container {
+        position: relative;
+        display: inline-block;
+    }
+    .profile-picture {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 5px solid white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .profile-picture-overlay {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background: white;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        transition: transform 0.2s;
+    }
+    .profile-picture-overlay:hover {
+        transform: scale(1.1);
+    }
+    .info-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+        transition: transform 0.2s;
+    }
+    .info-card:hover {
+        transform: translateY(-2px);
+    }
+    .info-card .card-header {
+        border-radius: 15px 15px 0 0;
+        font-weight: 600;
+    }
+    .info-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .info-item:last-child {
+        border-bottom: none;
+    }
+    .info-item i {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        margin-right: 15px;
+        font-size: 1.1rem;
+    }
+    .info-item .label {
+        color: #666;
+        font-size: 0.85rem;
+        margin-bottom: 2px;
+    }
+    .info-item .value {
+        font-weight: 500;
+        color: #333;
+    }
+    .allergy-badge {
+        display: inline-block;
+        background: #fee2e2;
+        color: #dc2626;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        margin: 3px;
+    }
+    .condition-badge {
+        display: inline-block;
+        background: #fef3c7;
+        color: #d97706;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        margin: 3px;
+    }
+    .quick-stats {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+    .stat-item {
+        background: rgba(255,255,255,0.2);
+        padding: 15px 25px;
+        border-radius: 12px;
+        text-align: center;
+        min-width: 100px;
+    }
+    .stat-item .number {
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+    .stat-item .label {
+        font-size: 0.85rem;
+        opacity: 0.9;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Profile Header -->
+<div class="profile-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-auto text-center text-md-start mb-3 mb-md-0">
+                <div class="profile-picture-container">
+                    <img src="{{ patient.profile_picture_url or url_for('static', filename='images/default_avatar.png') }}" 
+                         alt="Profile Picture" class="profile-picture" id="profilePicturePreview">
+                    <label class="profile-picture-overlay" for="profilePictureInput" title="Change Photo">
+                        <i class="fas fa-camera text-primary"></i>
+                    </label>
+                </div>
+            </div>
+            <div class="col-md text-center text-md-start">
+                <h2 class="mb-1">{{ patient.full_name }}</h2>
+                <p class="mb-2">
+                    <span class="badge bg-light text-dark me-2">
+                        <i class="fas fa-id-card me-1"></i>{{ patient.patient_id }}
+                    </span>
+                    <span class="badge bg-light text-dark me-2">
+                        <i class="fas fa-tint me-1"></i>{{ patient.blood_group or 'Blood Group N/A' }}
+                    </span>
+                    <span class="badge bg-light text-dark">
+                        <i class="fas fa-user me-1"></i>{{ patient.age }} years, {{ patient.gender }}
+                    </span>
+                </p>
+                <div class="quick-stats mt-3">
+                    <div class="stat-item">
+                        <div class="number">{{ prescriptions_count|default(0) }}</div>
+                        <div class="label">Prescriptions</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="number">{{ appointments_count|default(0) }}</div>
+                        <div class="label">Appointments</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="number">{{ reports_count|default(0) }}</div>
+                        <div class="label">Reports</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-auto text-center text-md-end mt-3 mt-md-0">
+                <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                    <i class="fas fa-edit me-1"></i> Edit Profile
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <div class="row g-4">
+        <!-- Personal Information -->
+        <div class="col-lg-6">
+            <div class="card info-card h-100">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-user me-2"></i>Personal Information
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <i class="fas fa-user bg-primary bg-opacity-10 text-primary"></i>
+                        <div>
+                            <div class="label">Full Name</div>
+                            <div class="value">{{ patient.full_name }}</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-birthday-cake bg-pink bg-opacity-10 text-danger"></i>
+                        <div>
+                            <div class="label">Date of Birth</div>
+                            <div class="value">
+                                {% if patient.date_of_birth %}
+                                    {{ patient.date_of_birth.strftime('%B %d, %Y') }}
+                                {% else %}
+                                    Not specified
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-venus-mars bg-info bg-opacity-10 text-info"></i>
+                        <div>
+                            <div class="label">Gender</div>
+                            <div class="value">{{ patient.gender }}</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-tint bg-danger bg-opacity-10 text-danger"></i>
+                        <div>
+                            <div class="label">Blood Group</div>
+                            <div class="value">{{ patient.blood_group or 'Not specified' }}</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-calendar-alt bg-success bg-opacity-10 text-success"></i>
+                        <div>
+                            <div class="label">Age</div>
+                            <div class="value">{{ patient.age }} years</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="col-lg-6">
+            <div class="card info-card h-100">
+                <div class="card-header bg-success text-white">
+                    <i class="fas fa-address-book me-2"></i>Contact Information
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <i class="fas fa-phone bg-success bg-opacity-10 text-success"></i>
+                        <div>
+                            <div class="label">Phone Number</div>
+                            <div class="value">{{ patient.phone or 'Not specified' }}</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-envelope bg-primary bg-opacity-10 text-primary"></i>
+                        <div>
+                            <div class="label">Email Address</div>
+                            <div class="value">{{ patient.email or 'Not specified' }}</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-map-marker-alt bg-danger bg-opacity-10 text-danger"></i>
+                        <div>
+                            <div class="label">Address</div>
+                            <div class="value">
+                                {{ patient.address or 'Not specified' }}
+                                {% if patient.city or patient.state or patient.pincode %}
+                                <br><small class="text-muted">
+                                    {{ patient.city }}{% if patient.city and patient.state %}, {% endif %}
+                                    {{ patient.state }}{% if patient.pincode %} - {{ patient.pincode }}{% endif %}
+                                </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Emergency Contact -->
+        <div class="col-lg-6">
+            <div class="card info-card h-100">
+                <div class="card-header bg-danger text-white">
+                    <i class="fas fa-ambulance me-2"></i>Emergency Contact
+                </div>
+                <div class="card-body">
+                    {% if patient.emergency_contact_name %}
+                    <div class="info-item">
+                        <i class="fas fa-user-shield bg-danger bg-opacity-10 text-danger"></i>
+                        <div>
+                            <div class="label">Contact Name</div>
+                            <div class="value">{{ patient.emergency_contact_name }}</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-phone-alt bg-warning bg-opacity-10 text-warning"></i>
+                        <div>
+                            <div class="label">Contact Phone</div>
+                            <div class="value">{{ patient.emergency_contact_phone or 'Not specified' }}</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-users bg-info bg-opacity-10 text-info"></i>
+                        <div>
+                            <div class="label">Relationship</div>
+                            <div class="value">{{ patient.emergency_contact_relation or 'Not specified' }}</div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                        <p class="mb-0">No emergency contact added</p>
+                        <small>Please add an emergency contact for safety</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Medical Information -->
+        <div class="col-lg-6">
+            <div class="card info-card h-100">
+                <div class="card-header bg-warning text-dark">
+                    <i class="fas fa-notes-medical me-2"></i>Medical Information
+                </div>
+                <div class="card-body">
+                    <!-- Allergies -->
+                    <h6 class="text-danger mb-2">
+                        <i class="fas fa-exclamation-triangle me-1"></i>Allergies
+                    </h6>
+                    <div class="mb-3">
+                        {% set allergies = patient.get_allergies_list() %}
+                        {% if allergies %}
+                            {% for allergy in allergies %}
+                            <span class="allergy-badge">{{ allergy }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-muted">No known allergies</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Conditions -->
+                    <h6 class="text-warning mb-2">
+                        <i class="fas fa-heartbeat me-1"></i>Medical Conditions
+                    </h6>
+                    <div class="mb-3">
+                        {% set conditions = patient.get_conditions_list() %}
+                        {% if conditions %}
+                            {% for condition in conditions %}
+                            <span class="condition-badge">{{ condition }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-muted">No recorded conditions</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Current Medications -->
+                    <h6 class="text-info mb-2">
+                        <i class="fas fa-pills me-1"></i>Current Medications
+                    </h6>
+                    <div>
+                        {% if patient.current_medications %}
+                            <p class="mb-0">{{ patient.current_medications }}</p>
+                        {% else %}
+                            <span class="text-muted">None recorded</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lifestyle Information -->
+        <div class="col-12">
+            <div class="card info-card">
+                <div class="card-header bg-info text-white">
+                    <i class="fas fa-heartbeat me-2"></i>Lifestyle Information
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <i class="fas fa-smoking-ban fa-2x mb-2 
+                                    {{ 'text-success' if patient.smoking_status == 'never' else 'text-warning' if patient.smoking_status == 'former' else 'text-danger' }}"></i>
+                                <h6 class="mb-0">Smoking</h6>
+                                <small class="text-muted">{{ patient.smoking_status|default('Not specified')|title }}</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <i class="fas fa-wine-glass-alt fa-2x mb-2 
+                                    {{ 'text-success' if patient.alcohol_consumption == 'never' else 'text-warning' if patient.alcohol_consumption == 'occasionally' else 'text-danger' }}"></i>
+                                <h6 class="mb-0">Alcohol</h6>
+                                <small class="text-muted">{{ patient.alcohol_consumption|default('Not specified')|title }}</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <i class="fas fa-utensils fa-2x mb-2 text-success"></i>
+                                <h6 class="mb-0">Diet</h6>
+                                <small class="text-muted">{{ patient.food_preference|default('Not specified')|title }}</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <i class="fas fa-running fa-2x mb-2 
+                                    {{ 'text-success' if patient.exercise_frequency in ['daily', 'regular'] else 'text-warning' if patient.exercise_frequency == 'occasionally' else 'text-muted' }}"></i>
+                                <h6 class="mb-0">Exercise</h6>
+                                <small class="text-muted">{{ patient.exercise_frequency|default('Not specified')|title }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="col-12">
+            <div class="card info-card">
+                <div class="card-header bg-secondary text-white">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3 col-6">
+                            <a href="{{ url_for('patient.prescriptions') }}" class="btn btn-outline-primary w-100 py-3">
+                                <i class="fas fa-prescription fa-2x d-block mb-2"></i>
+                                View Prescriptions
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <a href="{{ url_for('patient.appointments') }}" class="btn btn-outline-success w-100 py-3">
+                                <i class="fas fa-calendar-alt fa-2x d-block mb-2"></i>
+                                My Appointments
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <a href="{{ url_for('patient.reports') }}" class="btn btn-outline-info w-100 py-3">
+                                <i class="fas fa-file-medical fa-2x d-block mb-2"></i>
+                                Medical Reports
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <a href="{{ url_for('patient.medical_summary') }}" class="btn btn-outline-warning w-100 py-3">
+                                <i class="fas fa-notes-medical fa-2x d-block mb-2"></i>
+                                Medical Summary
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>Edit Profile
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('patient.profile') }}" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-body">
+                    <!-- Profile Picture -->
+                    <div class="text-center mb-4">
+                        <img src="{{ patient.profile_picture_url or url_for('static', filename='images/default_avatar.png') }}" 
+                             alt="Profile" class="rounded-circle mb-2" id="modalProfilePreview"
+                             style="width: 100px; height: 100px; object-fit: cover;">
+                        <div>
+                            <label class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-camera me-1"></i> Change Photo
+                                <input type="file" name="profile_picture" accept="image/*" hidden 
+                                       id="profilePictureInput" onchange="previewImage(this)">
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <!-- Personal Information -->
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2">
+                                <i class="fas fa-user me-1"></i> Personal Information
+                            </h6>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Full Name <span class="text-danger">*</span></label>
+                            <input type="text" name="full_name" class="form-control" 
+                                   value="{{ patient.full_name }}" required>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label class="form-label">Age</label>
+                            <input type="number" name="age" class="form-control" 
+                                   value="{{ patient.age }}" min="0" max="150">
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label class="form-label">Gender</label>
+                            <select name="gender" class="form-select">
+                                <option value="Male" {{ 'selected' if patient.gender == 'Male' }}>Male</option>
+                                <option value="Female" {{ 'selected' if patient.gender == 'Female' }}>Female</option>
+                                <option value="Other" {{ 'selected' if patient.gender == 'Other' }}>Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">Date of Birth</label>
+                            <input type="date" name="date_of_birth" class="form-control" 
+                                   value="{{ patient.date_of_birth.strftime('%Y-%m-%d') if patient.date_of_birth else '' }}">
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">Blood Group</label>
+                            <select name="blood_group" class="form-select">
+                                <option value="">Select</option>
+                                {% for bg in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
+                                <option value="{{ bg }}" {{ 'selected' if patient.blood_group == bg }}>{{ bg }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Contact Information -->
+                        <div class="col-12 mt-4">
+                            <h6 class="text-primary border-bottom pb-2">
+                                <i class="fas fa-phone me-1"></i> Contact Information
+                            </h6>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Phone <span class="text-danger">*</span></label>
+                            <input type="tel" name="phone" class="form-control" 
+                                   value="{{ patient.phone }}" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" 
+                                   value="{{ patient.email }}">
+                        </div>
+                        
+                        <div class="col-12">
+                            <label class="form-label">Address</label>
+                            <textarea name="address" class="form-control" rows="2">{{ patient.address }}</textarea>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">City</label>
+                            <input type="text" name="city" class="form-control" value="{{ patient.city }}">
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">State</label>
+                            <input type="text" name="state" class="form-control" value="{{ patient.state }}">
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">Pincode</label>
+                            <input type="text" name="pincode" class="form-control" value="{{ patient.pincode }}">
+                        </div>
+
+                        <!-- Emergency Contact -->
+                        <div class="col-12 mt-4">
+                            <h6 class="text-danger border-bottom pb-2">
+                                <i class="fas fa-ambulance me-1"></i> Emergency Contact
+                            </h6>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">Contact Name</label>
+                            <input type="text" name="emergency_contact_name" class="form-control" 
+                                   value="{{ patient.emergency_contact_name }}">
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">Contact Phone</label>
+                            <input type="tel" name="emergency_contact_phone" class="form-control" 
+                                   value="{{ patient.emergency_contact_phone }}">
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">Relationship</label>
+                            <select name="emergency_contact_relation" class="form-select">
+                                <option value="">Select</option>
+                                {% for rel in ['Spouse', 'Parent', 'Child', 'Sibling', 'Friend', 'Other'] %}
+                                <option value="{{ rel }}" {{ 'selected' if patient.emergency_contact_relation == rel }}>{{ rel }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Lifestyle -->
+                        <div class="col-12 mt-4">
+                            <h6 class="text-info border-bottom pb-2">
+                                <i class="fas fa-heartbeat me-1"></i> Lifestyle Information
+                            </h6>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label class="form-label">Smoking</label>
+                            <select name="smoking_status" class="form-select">
+                                <option value="never" {{ 'selected' if patient.smoking_status == 'never' }}>Never</option>
+                                <option value="former" {{ 'selected' if patient.smoking_status == 'former' }}>Former</option>
+                                <option value="current" {{ 'selected' if patient.smoking_status == 'current' }}>Current</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label class="form-label">Alcohol</label>
+                            <select name="alcohol_consumption" class="form-select">
+                                <option value="never" {{ 'selected' if patient.alcohol_consumption == 'never' }}>Never</option>
+                                <option value="occasionally" {{ 'selected' if patient.alcohol_consumption == 'occasionally' }}>Occasionally</option>
+                                <option value="regularly" {{ 'selected' if patient.alcohol_consumption == 'regularly' }}>Regularly</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label class="form-label">Diet</label>
+                            <select name="food_preference" class="form-select">
+                                <option value="vegetarian" {{ 'selected' if patient.food_preference == 'vegetarian' }}>Vegetarian</option>
+                                <option value="non-vegetarian" {{ 'selected' if patient.food_preference == 'non-vegetarian' }}>Non-Vegetarian</option>
+                                <option value="vegan" {{ 'selected' if patient.food_preference == 'vegan' }}>Vegan</option>
+                                <option value="eggetarian" {{ 'selected' if patient.food_preference == 'eggetarian' }}>Eggetarian</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label class="form-label">Exercise</label>
+                            <select name="exercise_frequency" class="form-select">
+                                <option value="none" {{ 'selected' if patient.exercise_frequency == 'none' }}>None</option>
+                                <option value="occasionally" {{ 'selected' if patient.exercise_frequency == 'occasionally' }}>Occasionally</option>
+                                <option value="regular" {{ 'selected' if patient.exercise_frequency == 'regular' }}>Regular</option>
+                                <option value="daily" {{ 'selected' if patient.exercise_frequency == 'daily' }}>Daily</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label class="form-label">Current Medications</label>
+                            <textarea name="current_medications" class="form-control" rows="2"
+                                      placeholder="List any medications you're currently taking">{{ patient.current_medications }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('modalProfilePreview').src = e.target.result;
+            document.getElementById('profilePicturePreview').src = e.target.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+{% endblock %}

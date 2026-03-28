@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block title %}Complete Your Profile - Smart Hospital{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-user-edit me-2"></i>Complete Your Patient Profile</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Welcome! Please complete your profile to access all features. 
+                        This information helps doctors provide better care.
+                    </div>
+                    
+                    <form method="POST" action="{{ url_for('patient.update_profile') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Full Name *</label>
+                                <input type="text" class="form-control" name="full_name" 
+                                       value="{{ patient.full_name }}" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Age *</label>
+                                <input type="number" class="form-control" name="age" 
+                                       value="{{ patient.age if patient.age > 0 else '' }}" 
+                                       min="0" max="150" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Gender *</label>
+                                <select class="form-select" name="gender" required>
+                                    <option value="">Select</option>
+                                    <option value="Male" {{ 'selected' if patient.gender == 'Male' else '' }}>Male</option>
+                                    <option value="Female" {{ 'selected' if patient.gender == 'Female' else '' }}>Female</option>
+                                    <option value="Other" {{ 'selected' if patient.gender == 'Other' else '' }}>Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Phone Number *</label>
+                                <input type="tel" class="form-control" name="phone" 
+                                       value="{{ patient.phone if patient.phone != 'Not Provided' else '' }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Blood Group</label>
+                                <select class="form-select" name="blood_group">
+                                    <option value="">Select</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Address</label>
+                            <textarea class="form-control" name="address" rows="2">{{ patient.address }}</textarea>
+                        </div>
+                        
+                        <hr>
+                        <h5><i class="fas fa-exclamation-triangle text-danger me-2"></i>Allergies</h5>
+                        <div class="mb-3">
+                            <div class="row">
+                                {% for allergy in ['Penicillin', 'Sulfa Drugs', 'Aspirin', 'Ibuprofen', 'Codeine', 'Latex'] %}
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allergies" value="{{ allergy }}" id="allergy{{ loop.index }}">
+                                        <label class="form-check-label" for="allergy{{ loop.index }}">{{ allergy }}</label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <input type="text" class="form-control mt-2" name="other_allergies" placeholder="Other allergies (comma separated)">
+                        </div>
+                        
+                        <hr>
+                        <h5><i class="fas fa-heartbeat text-warning me-2"></i>Medical Conditions</h5>
+                        <div class="mb-3">
+                            <div class="row">
+                                {% for condition in ['Diabetes', 'Hypertension', 'Asthma', 'Heart Disease', 'Kidney Disease', 'Thyroid'] %}
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="conditions" value="{{ condition }}" id="cond{{ loop.index }}">
+                                        <label class="form-check-label" for="cond{{ loop.index }}">{{ condition }}</label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        <h5><i class="fas fa-phone-alt text-info me-2"></i>Emergency Contact</h5>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Contact Name</label>
+                                <input type="text" class="form-control" name="emergency_name">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Contact Phone</label>
+                                <input type="tel" class="form-control" name="emergency_phone">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Relationship</label>
+                                <select class="form-select" name="emergency_relation">
+                                    <option value="">Select</option>
+                                    <option value="Spouse">Spouse</option>
+                                    <option value="Parent">Parent</option>
+                                    <option value="Child">Child</option>
+                                    <option value="Sibling">Sibling</option>
+                                    <option value="Friend">Friend</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>Save Profile
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Link to Existing Record -->
+            <div class="card mt-4 border-info">
+                <div class="card-body">
+                    <h5 class="text-info"><i class="fas fa-link me-2"></i>Already visited this hospital?</h5>
+                    <p class="small text-muted">
+                        If you've been registered by a doctor previously, you can link your account to existing records.
+                    </p>
+                    <form method="POST" action="{{ url_for('patient.link_existing') }}" class="row g-2">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="col-md-8">
+                            <input type="text" class="form-control" name="patient_id" placeholder="Enter your Patient ID (e.g., PT000001)">
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-info w-100">Link Account</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

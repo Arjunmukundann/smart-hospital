@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% block title %}Patient Dashboard - Smart Hospital{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Welcome Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="fas fa-heartbeat text-danger me-2"></i>Welcome, {{ patient.full_name }}
+            </h2>
+            <p class="text-muted mb-0">Patient ID: {{ patient.patient_id }}</p>
+        </div>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card bg-primary-gradient">
+                <div class="stat-icon">
+                    <i class="fas fa-prescription-bottle-alt"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-value">{{ active_prescriptions}}</h3>
+                    <p class="stat-title">Active Prescriptions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card bg-success-gradient">
+                <div class="stat-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-value">{{ today_reminders|length }}</h3>
+                    <p class="stat-title">Today's Reminders</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card bg-info-gradient">
+                <div class="stat-icon">
+                    <i class="fas fa-file-medical-alt"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-value">{{ total_reports }}</h3>
+                    <p class="stat-title">Medical Reports</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <!-- Today's Medicines -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white d-flex justify-content-between">
+                    <h5 class="mb-0"><i class="fas fa-pills text-primary me-2"></i>Today's Medicines</h5>
+                    <a href="{{ url_for('patient.reminders') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if today_reminders %}
+                    <div class="medicine-timeline">
+                        {% for reminder in today_reminders %}
+                        <div class="medicine-item d-flex align-items-center p-2 mb-2 bg-light rounded">
+                            <div class="medicine-icon me-3">
+                                <i class="fas fa-capsules fa-2x text-primary"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">{{ reminder.medicine }}</h6>
+                                <small class="text-muted">{{ reminder.dosage }} - {{ reminder.timing }}</small>
+                            </div>
+                            <span class="badge bg-info">{{ reminder.frequency }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <p>No medicines scheduled for today</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-bolt text-warning me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <a href="{{ url_for('patient.meal_analyzer') }}" class="quick-action-card">
+                                <i class="fas fa-utensils"></i>
+                                <span>Meal Analyzer</span>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ url_for('patient.prescriptions') }}" class="quick-action-card">
+                                <i class="fas fa-prescription"></i>
+                                <span>Prescriptions</span>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ url_for('patient.reminders') }}" class="quick-action-card">
+                                <i class="fas fa-bell"></i>
+                                <span>Reminders</span>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ url_for('patient.medical_summary') }}" class="quick-action-card">
+                                <i class="fas fa-notes-medical"></i>
+                                <span>Medical Summary</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Prescriptions -->
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between">
+                    <h5 class="mb-0"><i class="fas fa-prescription text-success me-2"></i>Recent Prescriptions</h5>
+                    <a href="{{ url_for('patient.prescriptions') }}" class="btn btn-sm btn-outline-success">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if active_prescriptions %}
+                    <div class="row g-3">
+                        {% for rx in active_prescriptions %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="prescription-card">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="badge bg-{{ 'success' if rx.status == 'active' else 'secondary' }}">
+                                        {{ rx.status }}
+                                    </span>
+                                    <small class="text-muted">{{ rx.created_at.strftime('%b %d, %Y') }}</small>
+                                </div>
+                                <h6 class="mb-1">{{ rx.diagnosis[:50] }}{% if rx.diagnosis|length > 50 %}...{% endif %}</h6>
+                                <small class="text-muted">Dr. {{ rx.doctor.full_name }}</small>
+                                <hr class="my-2">
+                                <p class="mb-2 small">
+                                    <i class="fas fa-pills me-1"></i>
+                                    {{ rx.medicines.count() }} medicine(s)
+                                </p>
+                                <a href="{{ url_for('patient.prescription_detail', prescription_id=rx.id) }}" 
+                                   class="btn btn-sm btn-outline-primary w-100">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-clipboard-list fa-3x mb-3"></i>
+                        <p>No prescriptions yet</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

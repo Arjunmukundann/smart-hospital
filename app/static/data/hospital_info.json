@@ -1,0 +1,43 @@
+{
+    "name": "Smart Hospital",
+    "tagline": "Advanced Healthcare, Compassionate Care",
+    "address": "123 Medical Center Drive, Healthcare City, HC 12345",
+    "phone": "+1-234-567-8900",
+    "emergency_phone": "+1-234-567-8911",
+    "email": "info@smarthospital.com",
+    "website": "https://www.smarthospital.com",
+    "working_hours": "Monday - Saturday: 8:00 AM - 8:00 PM\nSunday: Emergency Only (24/7)",
+    "departments": [
+        "General Medicine",
+        "Cardiology",
+        "Orthopedics",
+        "Pediatrics",
+        "Neurology",
+        "Dermatology",
+        "Ophthalmology",
+        "ENT",
+        "Gynecology",
+        "Urology"
+    ],
+    "facilities": [
+        "24/7 Emergency",
+        "ICU",
+        "Operation Theater",
+        "Pharmacy",
+        "Laboratory",
+        "Radiology",
+        "Ambulance Service"
+    ],
+    "insurance_accepted": [
+        "Medicare",
+        "Blue Cross Blue Shield",
+        "Aetna",
+        "Cigna",
+        "United Healthcare"
+    ],
+    "social_media": {
+        "facebook": "https://facebook.com/smarthospital",
+        "twitter": "https://twitter.com/smarthospital",
+        "instagram": "https://instagram.com/smarthospital"
+    }
+}

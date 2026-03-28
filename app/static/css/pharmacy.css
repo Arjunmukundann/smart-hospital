@@ -1,0 +1,477 @@
+/* =============================================
+   PHARMACY MODULE STYLES
+   ============================================= */
+
+/* Dashboard Cards */
+.pharmacy-stat-card {
+    border-radius: 15px;
+    border: none;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.pharmacy-stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.pharmacy-stat-card .card-body {
+    padding: 1.5rem;
+}
+
+.pharmacy-stat-card .stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.pharmacy-stat-card .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0;
+}
+
+.pharmacy-stat-card .stat-label {
+    font-size: 0.875rem;
+    opacity: 0.8;
+    margin-bottom: 0;
+}
+
+/* Inventory Table */
+.inventory-table {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.inventory-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.inventory-table td {
+    vertical-align: middle;
+    padding: 1rem 0.75rem;
+}
+
+.inventory-table tbody tr {
+    transition: background 0.2s;
+}
+
+.inventory-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+/* Stock Status Badges */
+.stock-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.stock-badge.in-stock {
+    background: #d4edda;
+    color: #155724;
+}
+
+.stock-badge.low-stock {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.stock-badge.out-of-stock {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.stock-badge.expired {
+    background: #f5c6cb;
+    color: #721c24;
+}
+
+/* Stock Progress Bar */
+.stock-progress {
+    height: 8px;
+    border-radius: 4px;
+    background: #e9ecef;
+    overflow: hidden;
+}
+
+.stock-progress-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.stock-progress-bar.high {
+    background: linear-gradient(90deg, #28a745, #20c997);
+}
+
+.stock-progress-bar.medium {
+    background: linear-gradient(90deg, #ffc107, #fd7e14);
+}
+
+.stock-progress-bar.low {
+    background: linear-gradient(90deg, #dc3545, #e83e8c);
+}
+
+/* Medicine Card */
+.medicine-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.medicine-card:hover {
+    border-color: #4a90d9;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.medicine-card .medicine-name {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.25rem;
+}
+
+.medicine-card .medicine-generic {
+    font-size: 0.875rem;
+    color: #666;
+}
+
+.medicine-card .medicine-category {
+    display: inline-block;
+    background: #e8f4fd;
+    color: #4a90d9;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+/* Prescription Card */
+.prescription-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.prescription-card:hover {
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.prescription-card .card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem;
+}
+
+.prescription-card .rx-id {
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+}
+
+.prescription-card .signed-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+}
+
+/* Dispense Form */
+.dispense-form {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.dispense-item {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s ease;
+}
+
+.dispense-item:hover {
+    border-color: #4a90d9;
+}
+
+.dispense-item .medicine-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 0.75rem;
+}
+
+.dispense-item .quantity-input {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dispense-item .quantity-input input {
+    width: 80px;
+    text-align: center;
+    border-radius: 8px;
+}
+
+.dispense-item .stock-info {
+    font-size: 0.875rem;
+    color: #666;
+}
+
+.dispense-item .stock-info.sufficient {
+    color: #28a745;
+}
+
+.dispense-item .stock-info.insufficient {
+    color: #dc3545;
+}
+
+/* Bill Display */
+.bill-display {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.bill-header {
+    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+    color: white;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.bill-header .hospital-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.bill-header .bill-title {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+.bill-info {
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    border-bottom: 1px dashed #dee2e6;
+}
+
+.bill-info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.bill-info-row:last-child {
+    margin-bottom: 0;
+}
+
+.bill-items {
+    padding: 1.5rem;
+}
+
+.bill-items-table {
+    width: 100%;
+}
+
+.bill-items-table th {
+    border-bottom: 2px solid #dee2e6;
+    padding: 0.75rem 0.5rem;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+}
+
+.bill-items-table td {
+    padding: 0.75rem 0.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.bill-totals {
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    border-top: 2px dashed #dee2e6;
+}
+
+.bill-total-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+}
+
+.bill-total-row.grand-total {
+    font-size: 1.25rem;
+    font-weight: 700;
+    border-top: 2px solid #333;
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+}
+
+.bill-footer {
+    padding: 1.5rem;
+    text-align: center;
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+}
+
+.payment-status {
+    display: inline-block;
+    padding: 0.5rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.payment-status.paid {
+    background: #d4edda;
+    color: #155724;
+}
+
+.payment-status.pending {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.payment-status.partial {
+    background: #fff3cd;
+    color: #856404;
+}
+
+/* Quick Actions */
+.quick-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.quick-action-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease;
+}
+
+.quick-action-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Search and Filters */
+.pharmacy-filters {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+}
+
+.filter-group {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filter-group .form-control,
+.filter-group .form-select {
+    max-width: 200px;
+}
+
+/* Low Stock Alert */
+.low-stock-alert {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
+    border: 1px solid #ffc107;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.low-stock-alert .alert-icon {
+    font-size: 2rem;
+    color: #856404;
+}
+
+.low-stock-alert .alert-content h6 {
+    color: #856404;
+    margin-bottom: 0.25rem;
+}
+
+.low-stock-alert .alert-content p {
+    color: #856404;
+    margin-bottom: 0;
+    font-size: 0.875rem;
+}
+
+/* Print Styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .bill-display {
+        border: none;
+        box-shadow: none;
+    }
+    
+    .bill-header {
+        background: #333 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+/* Animations */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.medicine-card,
+.prescription-card {
+    animation: slideIn 0.3s ease;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .pharmacy-stat-card .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .filter-group {
+        flex-direction: column;
+    }
+    
+    .filter-group .form-control,
+    .filter-group .form-select {
+        max-width: 100%;
+    }
+    
+    .quick-actions {
+        justify-content: center;
+    }
+}

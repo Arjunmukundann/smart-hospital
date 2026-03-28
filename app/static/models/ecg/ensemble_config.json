@@ -1,0 +1,21 @@
+{
+  "method": "weighted",
+  "model_weights": {
+    "cnn": 0.35,
+    "cnn_lstm": 0.3,
+    "random_forest": 0.2,
+    "lstm": 0.15
+  },
+  "classes": [
+    "F",
+    "N",
+    "S",
+    "V"
+  ],
+  "class_weights": {
+    "0": 1.0,
+    "1": 1.0,
+    "2": 1.0,
+    "3": 1.0
+  }
+}

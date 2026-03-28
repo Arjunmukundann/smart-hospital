@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}My Insurance - Smart Hospital{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-shield-alt text-primary"></i> My Insurance</h2>
+            <p class="text-muted mb-0">Manage your health insurance policies</p>
+        </div>
+        <a href="{{ url_for('patient.add_insurance') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add Insurance
+        </a>
+    </div>
+
+    <!-- Active Policies -->
+    <div class="row">
+        {% for policy in policies %}
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 {{ 'border-primary' if policy.is_primary }}">
+                {% if policy.is_primary %}
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-star"></i> Primary Insurance
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        {% if policy.provider and policy.provider.logo %}
+                        <img src="/static/images/insurance/{{ policy.provider.logo }}" 
+                             alt="{{ policy.provider.name }}" height="40" class="me-3">
+                        {% else %}
+                        <div class="bg-light rounded p-2 me-3">
+                            <i class="fas fa-building fa-2x text-muted"></i>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <h5 class="mb-0">{{ policy.provider.name if policy.provider else 'Unknown Provider' }}</h5>
+                            <small class="text-muted">{{ policy.plan_name or policy.plan_type }}</small>
+                        </div>
+                    </div>
+
+                    <table class="table table-sm table-borderless">
+                        <tr>
+                            <td class="text-muted">Policy Number:</td>
+                            <td><strong>{{ policy.policy_number }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Member ID:</td>
+                            <td>{{ policy.member_id }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Coverage:</td>
+                            <td><strong>{{ policy.coverage_percentage }}%</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Deductible:</td>
+                            <td>₹{{ "%.2f"|format(policy.deductible) }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Valid Until:</td>
+                            <td>
+                                {{ policy.expiry_date.strftime('%d %b %Y') }}
+                                {% if policy.is_expired %}
+                                <span class="badge bg-danger ms-2">Expired</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div class="d-flex gap-2">
+                        {% if policy.is_valid %}
+                        <span class="badge bg-success">
+                            <i class="fas fa-check-circle"></i> Active & Verified
+                        </span>
+                        {% elif policy.verification_status == 'pending' %}
+                        <span class="badge bg-warning">
+                            <i class="fas fa-clock"></i> Verification Pending
+                        </span>
+                        {% elif policy.is_expired %}
+                        <span class="badge bg-danger">
+                            <i class="fas fa-times-circle"></i> Expired
+                        </span>
+                        {% else %}
+                        <span class="badge bg-secondary">
+                            <i class="fas fa-question-circle"></i> {{ policy.verification_status }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-footer bg-white">
+                    <div class="d-flex justify-content-between">
+                        {% if not policy.is_primary and policy.is_active %}
+                        <form method="POST" action="{{ url_for('patient.set_primary_insurance', policy_id=policy.id) }}" style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                Set as Primary
+                            </button>
+                        </form>
+                        {% else %}
+                        <div></div>
+                        {% endif %}
+                        <form method="POST" action="{{ url_for('patient.remove_insurance', policy_id=policy.id) }}" 
+                              onsubmit="return confirm('Are you sure you want to remove this insurance?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-shield-alt fa-4x text-muted mb-3"></i>
+                    <h4>No Insurance Policies</h4>
+                    <p class="text-muted mb-4">Add your insurance policy to enjoy cashless benefits</p>
+                    <a href="{{ url_for('patient.add_insurance') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Insurance
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Claims Section -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-file-invoice-dollar"></i> Recent Claims</h5>
+        </div>
+        <div class="card-body">
+            <a href="{{ url_for('patient.insurance_claims') }}" class="btn btn-outline-primary">
+                View All Claims <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Insurance Providers -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-handshake"></i> Accepted Insurance Providers</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for provider in providers %}
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="border rounded p-3 text-center h-100">
+                        <i class="fas fa-building fa-2x text-primary mb-2"></i>
+                        <p class="mb-0 small">{{ provider.name }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

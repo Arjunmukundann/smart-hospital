@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}My Prescriptions - Smart Hospital{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="fw-bold mb-4">
+        <i class="fas fa-prescription text-primary me-2"></i>My Prescriptions
+    </h2>
+    
+    {% if prescriptions %}
+    <div class="row g-4">
+        {% for rx in prescriptions %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm h-100 prescription-card-hover">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="badge bg-{{ 'success' if rx.status == 'active' else 'secondary' }}">
+                            {{ rx.status|title }}
+                        </span>
+                        <small class="text-muted">{{ rx.created_at.strftime('%b %d, %Y') }}</small>
+                    </div>
+                    
+                    <h5 class="card-title">{{ rx.diagnosis[:60] }}{% if rx.diagnosis|length > 60 %}...{% endif %}</h5>
+                    
+                    <p class="card-text text-muted small">
+                        <i class="fas fa-user-md me-1"></i>Dr. {{ rx.doctor.full_name }}
+                    </p>
+                    
+                    <div class="medicine-count mb-3">
+                        <span class="badge bg-light text-dark">
+                            <i class="fas fa-pills me-1"></i>{{ rx.medicines.count() }} medicine(s)
+                        </span>
+                    </div>
+                    
+                    <a href="{{ url_for('patient.prescription_detail', prescription_id=rx.id) }}" 
+                       class="btn btn-primary w-100">
+                        <i class="fas fa-eye me-2"></i>View Details
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-clipboard-list fa-5x text-muted mb-4"></i>
+        <h4 class="text-muted">No Prescriptions Yet</h4>
+        <p class="text-muted">Your prescriptions will appear here after your doctor visit.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block title %}Safety Alerts - Smart Hospital{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow-lg border-danger">
+        <div class="card-header bg-danger text-white">
+            <h4 class="mb-0">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Safety Alerts Detected
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <strong><i class="fas fa-shield-alt me-2"></i>Important:</strong>
+                The following safety concerns were detected. Please review each alert before proceeding.
+            </div>
+            
+            <form method="POST" action="{{ url_for('doctor.prescription', patient_id=patient.id) }}" id="overrideForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <!-- Preserve original form data -->
+                {% for key, value in form_data.items(multi=True) %}
+                    {% if key != 'csrf_token' %}
+                    <input type="hidden" name="{{ key }}" value="{{ value }}">
+                    {% endif %}
+                {% endfor %}
+                
+                <!-- Critical Alerts -->
+                {% set critical_alerts = alerts|selectattr('severity', 'equalto', 'critical')|list %}
+                {% if critical_alerts %}
+                <div class="mb-4">
+                    <h5 class="text-danger"><i class="fas fa-skull-crossbones me-2"></i>Critical Alerts</h5>
+                    {% for alert in critical_alerts %}
+                    <div class="alert-card severity-critical p-3 mb-3 border rounded border-danger bg-danger bg-opacity-10">
+                        <div class="d-flex justify-content-between">
+                            <span class="badge bg-danger">{{ alert.type|replace('_', ' ')|title }}</span>
+                            <span class="text-danger fw-bold">CRITICAL</span>
+                        </div>
+                        <hr>
+                        <p><strong>Medicine:</strong> {{ alert.medicine }}</p>
+                        <p><strong>Conflict:</strong> {{ alert.conflicting_item }}</p>
+                        <p>{{ alert.description }}</p>
+                        <p class="text-info mb-2">
+                            <i class="fas fa-lightbulb me-1"></i>
+                            <strong>Recommendation:</strong> {{ alert.recommendation }}
+                        </p>
+                        <div class="form-check">
+                            <input class="form-check-input alert-check" type="checkbox" 
+                                   id="ack-critical-{{ loop.index }}" required>
+                            <label class="form-check-label" for="ack-critical-{{ loop.index }}">
+                                I acknowledge this critical alert
+                            </label>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- High Severity Alerts -->
+                {% set high_alerts = alerts|selectattr('severity', 'equalto', 'high')|list %}
+                {% if high_alerts %}
+                <div class="mb-4">
+                    <h5 class="text-warning"><i class="fas fa-exclamation-triangle me-2"></i>High Severity Alerts</h5>
+                    {% for alert in high_alerts %}
+                    <div class="alert-card severity-high p-3 mb-3 border rounded border-warning bg-warning bg-opacity-10">
+                        <div class="d-flex justify-content-between">
+                            <span class="badge bg-warning text-dark">{{ alert.type|replace('_', ' ')|title }}</span>
+                            <span class="text-warning fw-bold">HIGH</span>
+                        </div>
+                        <hr>
+                        <p><strong>Medicine:</strong> {{ alert.medicine }}</p>
+                        <p><strong>Conflict:</strong> {{ alert.conflicting_item }}</p>
+                        <p>{{ alert.description }}</p>
+                        <p class="text-info mb-2">
+                            <i class="fas fa-lightbulb me-1"></i>
+                            <strong>Recommendation:</strong> {{ alert.recommendation }}
+                        </p>
+                        <div class="form-check">
+                            <input class="form-check-input alert-check" type="checkbox" 
+                                   id="ack-high-{{ loop.index }}" required>
+                            <label class="form-check-label" for="ack-high-{{ loop.index }}">
+                                I acknowledge this alert
+                            </label>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Medium/Low Alerts -->
+                {% set other_alerts = alerts|rejectattr('severity', 'equalto', 'critical')|rejectattr('severity', 'equalto', 'high')|list %}
+                {% if other_alerts %}
+                <div class="mb-4">
+                    <h5 class="text-info"><i class="fas fa-info-circle me-2"></i>Other Alerts</h5>
+                    {% for alert in other_alerts %}
+                    <div class="alert-card p-3 mb-3 border rounded border-info bg-info bg-opacity-10">
+                        <div class="d-flex justify-content-between">
+                            <span class="badge bg-info">{{ alert.type|replace('_', ' ')|title }}</span>
+                            <span class="text-info">{{ alert.severity|upper }}</span>
+                        </div>
+                        <hr>
+                        <p><strong>Medicine:</strong> {{ alert.medicine }}</p>
+                        <p>{{ alert.description }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Override Section -->
+                <div class="card bg-light mt-4">
+                    <div class="card-body">
+                        <h5 class="text-danger"><i class="fas fa-user-shield me-2"></i>Doctor Override</h5>
+                        <p class="text-muted">
+                            If you still want to proceed with this prescription despite the alerts, 
+                            you must provide a medical justification.
+                        </p>
+                        
+                        <div class="mb-3">
+                            <label for="override_reason" class="form-label">Justification for Override *</label>
+                            <textarea class="form-control" id="override_reason" name="override_reason" 
+                                      rows="3" placeholder="Provide medical justification for overriding safety alerts..."></textarea>
+                        </div>
+                        
+                        <input type="hidden" name="safety_override" value="confirmed">
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('doctor.prescription', patient_id=patient.id) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-edit me-2"></i>Modify Prescription
+                    </a>
+                    <button type="submit" class="btn btn-danger" id="overrideBtn" disabled>
+                        <i class="fas fa-exclamation-triangle me-2"></i>Override & Proceed
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Enable override button only when all alerts acknowledged and reason provided
+    const checkboxes = document.querySelectorAll('.alert-check');
+    const overrideReason = document.getElementById('override_reason');
+    const overrideBtn = document.getElementById('overrideBtn');
+    
+    function checkForm() {
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        const hasReason = overrideReason.value.trim().length > 10;
+        overrideBtn.disabled = !(allChecked && hasReason);
+    }
+    
+    checkboxes.forEach(cb => cb.addEventListener('change', checkForm));
+    overrideReason.addEventListener('input', checkForm);
+</script>
+{% endblock %}

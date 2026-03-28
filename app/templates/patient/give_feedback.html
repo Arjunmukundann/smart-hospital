@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Give Feedback{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Rate Your Experience</h2>
+    <div class="card">
+        <div class="card-body">
+            <h4>Dr. {{ appointment.doctor.full_name }} <small class="text-muted">- {{ appointment.appointment_date.strftime('%d %b %Y') }}</small></h4>
+            
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="mb-3">
+                    <label>Overall Rating <span class="text-danger">*</span></label><br>
+                    <div class="star-rating">
+                        {% for i in range(5,0,-1) %}
+                        <input type="radio" name="overall_rating" value="{{ i }}" id="star{{ i }}" required>
+                        <label for="star{{ i }}">★</label>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label>Your Review (optional)</label>
+                    <textarea name="review" class="form-control" rows="4" placeholder="Share your experience..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-success btn-lg">Submit Feedback</button>
+                <a href="{{ url_for('patient.appointments') }}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.star-rating { font-size: 40px; }
+.star-rating input { display: none; }
+.star-rating label { color: #ddd; cursor: pointer; }
+.star-rating input:checked ~ label { color: #f5c842; }
+.star-rating label:hover, .star-rating label:hover ~ label { color: #f5c842; }
+</style>
+{% endblock %}

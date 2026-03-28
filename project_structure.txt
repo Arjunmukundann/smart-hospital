@@ -1,0 +1,281 @@
+Folder PATH listing for volume Windows
+Volume serial number is 78C1-3591
+C:.
+|   .env
+|   check.py
+|   create_admin.py
+|   fin_broken_routes.py
+|   hospital.db
+|   init_db.py
+|   migrate_database.py
+|   project_structure.txt
+|   README.md
+|   requirements.txt
+|   run.py
+|   
++---.vscode
+|       settings.json
+|       
++---app
+|   |   config.py
+|   |   extensions.py
+|   |   __init__.py
+|   |   
+|   +---models
+|   |   |   alert.py
+|   |   |   appointment.py
+|   |   |   bill.py
+|   |   |   chat_log.py
+|   |   |   ecg_record.py
+|   |   |   feedback.py
+|   |   |   insurance.py
+|   |   |   inventory.py
+|   |   |   patient.py
+|   |   |   pharmacy.py
+|   |   |   prescription.py
+|   |   |   referral.py
+|   |   |   reminder.py
+|   |   |   report.py
+|   |   |   user.py
+|   |   |   video_consultation.py
+|   |   |   __init__.py
+|   |   |   
+|   |   \---__pycache__
+|   |           alert.cpython-312.pyc
+|   |           appointment.cpython-312.pyc
+|   |           bill.cpython-312.pyc
+|   |           chat_log.cpython-312.pyc
+|   |           feedback.cpython-312.pyc
+|   |           insurance.cpython-312.pyc
+|   |           inventory.cpython-312.pyc
+|   |           patient.cpython-312.pyc
+|   |           pharmacy.cpython-312.pyc
+|   |           prescription.cpython-312.pyc
+|   |           referral.cpython-312.pyc
+|   |           reminder.cpython-312.pyc
+|   |           report.cpython-312.pyc
+|   |           user.cpython-312.pyc
+|   |           video_consultation.cpython-312.pyc
+|   |           __init__.cpython-312.pyc
+|   |           
+|   +---routes
+|   |   |   admin.py
+|   |   |   api.py
+|   |   |   appointment.py
+|   |   |   auth.py
+|   |   |   chatbot.py
+|   |   |   doctor.py
+|   |   |   ecg.py
+|   |   |   insurance.py
+|   |   |   meal.py
+|   |   |   patient.py
+|   |   |   pharmacy.py
+|   |   |   video_call.py
+|   |   |   __init__.py
+|   |   |   
+|   |   \---__pycache__
+|   |           admin.cpython-312.pyc
+|   |           api.cpython-312.pyc
+|   |           appointment.cpython-312.pyc
+|   |           auth.cpython-312.pyc
+|   |           chatbot.cpython-312.pyc
+|   |           doctor.cpython-312.pyc
+|   |           meal.cpython-312.pyc
+|   |           patient.cpython-312.pyc
+|   |           pharmacy.cpython-312.pyc
+|   |           video_call.cpython-312.pyc
+|   |           __init__.cpython-312.pyc
+|   |           
+|   +---services
+|   |   |   billing_service.py
+|   |   |   chatbot_service.py
+|   |   |   ecg_service.py
+|   |   |   food_detection_ml.py
+|   |   |   image_service.py
+|   |   |   insurance_service.py
+|   |   |   meal_analyzer.py
+|   |   |   notification_service.py
+|   |   |   ocr_service.py
+|   |   |   pdf_service.py
+|   |   |   prediction_service.py
+|   |   |   reminder_service.py
+|   |   |   report_analyzer.py
+|   |   |   safety_checker.py
+|   |   |   scheduler.py
+|   |   |   signature_service.py
+|   |   |   video_service.py
+|   |   |   __init__.py
+|   |   |   
+|   |   \---__pycache__
+|   |           billing_service.cpython-312.pyc
+|   |           chatbot_service.cpython-312.pyc
+|   |           food_detection_ml.cpython-312.pyc
+|   |           image_service.cpython-312.pyc
+|   |           meal_analyzer.cpython-312.pyc
+|   |           notification_service.cpython-312.pyc
+|   |           ocr_service.cpython-312.pyc
+|   |           pdf_service.cpython-312.pyc
+|   |           prediction_service.cpython-312.pyc
+|   |           reminder_service.cpython-312.pyc
+|   |           report_analyzer.cpython-312.pyc
+|   |           safety_checker.cpython-312.pyc
+|   |           scheduler.cpython-312.pyc
+|   |           signature_service.cpython-312.pyc
+|   |           video_service.cpython-312.pyc
+|   |           __init__.cpython-312.pyc
+|   |           
+|   +---static
+|   |   +---css
+|   |   |       chatbot.css
+|   |   |       pharmacy.css
+|   |   |       style.css
+|   |   |       video_call.css
+|   |   |       
+|   |   +---data
+|   |   |       drug_interactions.csv
+|   |   |       food_interactions.csv
+|   |   |       hospital_info.json
+|   |   |       insurance_providers.json
+|   |   |       medical_terms.json
+|   |   |       
+|   |   +---js
+|   |   |       appointment.js
+|   |   |       chatbot.js
+|   |   |       main.js
+|   |   |       pharmacy.js
+|   |   |       signature_pad.js
+|   |   |       video_call.js
+|   |   |       
+|   |   +---models
+|   |   |   \---ecg
+|   |   |           cnn_lstm_model.h5
+|   |   |           cnn_model.h5
+|   |   |           ensemble_config.json
+|   |   |           label_encoder.pkl
+|   |   |           lstm_model.h5
+|   |   |           random_forest.pkl
+|   |   |           scaler.pkl
+|   |   |           
+|   |   \---uploads
+|   |       |   food_4_xray.jpg
+|   |       |   
+|   |       +---prescriptions
+|   |       +---profile_pictures
+|   |       |       default_avatar.png
+|   |       |       
+|   |       +---reports
+|   |       |       PT000002_20260131_195421_xray.jpg
+|   |       |       PT000002_20260131_195833_images.png
+|   |       |       PT000002_20260131_200007_images.png
+|   |       |       PT000003_20260131_225913_xray.jpg
+|   |       |       PT000003_20260131_230110_download.jpg
+|   |       |       PT000003_20260131_230132_download.jpg
+|   |       |       
+|   |       \---signatures
+|   +---templates
+|   |   |   base.html
+|   |   |   index.html
+|   |   |   
+|   |   +---admin
+|   |   |       analytics.html
+|   |   |       dashboard.html
+|   |   |       ecg_detection.html
+|   |   |       ecg_result.html
+|   |   |       ecg_upload.html
+|   |   |       error_logs.html
+|   |   |       inventory.html
+|   |   |       predictions.html
+|   |   |       reminder_settings.html
+|   |   |       users.html
+|   |   |       
+|   |   +---appointment
+|   |   |       appointment_detail.html
+|   |   |       
+|   |   +---auth
+|   |   |       login.html
+|   |   |       register.html
+|   |   |       
+|   |   +---chatbot
+|   |   |       widget.html
+|   |   |       
+|   |   +---doctor
+|   |   |       appointments.html
+|   |   |       dashboard.html
+|   |   |       e-prescription.html
+|   |   |       manual_report.html
+|   |   |       patient.html
+|   |   |       patient_detail.html
+|   |   |       patient_survey.html
+|   |   |       prescription.html
+|   |   |       prescriptions.html
+|   |   |       profile.html
+|   |   |       referrals.html
+|   |   |       report_upload.html
+|   |   |       safety_alerts.html
+|   |   |       search_patient.html
+|   |   |       sign_prescription.html
+|   |   |       video_consultation.html
+|   |   |       view_appointment.html
+|   |   |       view_report.html
+|   |   |       
+|   |   +---errors
+|   |   |       403.html
+|   |   |       404.html
+|   |   |       500.html
+|   |   |       
+|   |   +---includes
+|   |   |       alerts.html
+|   |   |       chatbot_widget.html
+|   |   |       footer.html
+|   |   |       navbar.html
+|   |   |       
+|   |   +---patient
+|   |   |       appointments.html
+|   |   |       book_appointment.html
+|   |   |       complete_profile.html
+|   |   |       dashboard.html
+|   |   |       feedback.html
+|   |   |       find_doctors.html
+|   |   |       food_detection.html
+|   |   |       give_feedback.html
+|   |   |       insurance.html
+|   |   |       meal_analyzer.html
+|   |   |       medical_summary.html
+|   |   |       my_feedback.html
+|   |   |       no_profile.html
+|   |   |       prescriptions.html
+|   |   |       prescription_detail.html
+|   |   |       profile.html
+|   |   |       reminders.html
+|   |   |       reminder_settings.html
+|   |   |       reports.html
+|   |   |       video_call.html
+|   |   |       view_appointment.html
+|   |   |       view_doctor.html
+|   |   |       
+|   |   +---pharmacy
+|   |   |       billing.html
+|   |   |       dashboard.html
+|   |   |       dispense.html
+|   |   |       inventory.html
+|   |   |       prescription.html
+|   |   |       print_bill.html
+|   |   |       
+|   |   \---video
+|   |           room.html
+|   |           
+|   \---__pycache__
+|           config.cpython-312.pyc
+|           extensions.cpython-312.pyc
+|           __init__.cpython-312.pyc
+|           
+\---migrations
+    |   alembic.ini
+    |   env.py
+    |   README
+    |   script.py.mako
+    |   
+    +---versions
+    \---__pycache__
+            env.cpython-312.pyc
+            

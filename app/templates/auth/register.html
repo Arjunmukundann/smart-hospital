@@ -1,0 +1,357 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Smart Hospital Platform{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <div class="auth-icon mb-3">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h3 class="fw-bold">Create Account</h3>
+                        <p class="text-muted">Join Smart Hospital Platform</p>
+                    </div>
+                    
+                    <form method="POST" action="{{ url_for('auth.register') }}" id="registerForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <!-- ✅ FIX 1: Role Selection - REMOVED ADMIN OPTION -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">I am a: *</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="radio" class="btn-check" name="role" id="rolePatient" value="patient" checked>
+                                    <label class="btn btn-outline-primary w-100 py-3" for="rolePatient">
+                                        <i class="fas fa-user-injured d-block mb-1"></i>
+                                        Patient
+                                    </label>
+                                </div>
+                                <div class="col-6">
+                                    <input type="radio" class="btn-check" name="role" id="roleDoctor" value="doctor">
+                                    <label class="btn btn-outline-success w-100 py-3" for="roleDoctor">
+                                        <i class="fas fa-user-md d-block mb-1"></i>
+                                        Doctor
+                                    </label>
+                                </div>
+                                <!-- ❌ ADMIN OPTION REMOVED FOR SECURITY -->
+                            </div>
+                            <small class="text-muted mt-2 d-block">
+                                <i class="fas fa-info-circle"></i> 
+                                Admin accounts can only be created by the system administrator.
+                            </small>
+                        </div>
+                        
+                        <!-- Patient Linking Notice -->
+                        <div id="patientLinkingNotice" class="alert alert-info mb-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Already visited the hospital?</strong><br>
+                            <small>If a doctor has already registered you, we'll automatically link your account to your existing patient record.</small>
+                        </div>
+                        
+                        <!-- Basic Info -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="username" class="form-label">Username *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <input type="text" class="form-control" id="username" name="username" 
+                                           placeholder="Choose username" required minlength="3">
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           placeholder="your@email.com" required>
+                                </div>
+                                <div id="emailCheckResult" class="mt-1"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="full_name" class="form-label">Full Name *</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                <input type="text" class="form-control" id="full_name" name="full_name" 
+                                       placeholder="Enter your full name" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                <input type="tel" class="form-control" id="phone" name="phone" 
+                                       placeholder="Your phone number (for linking existing record)">
+                            </div>
+                            <div id="phoneCheckResult" class="mt-1"></div>
+                        </div>
+                        
+                        <!-- Existing Patient Found Alert -->
+                        <div id="existingPatientAlert" class="alert alert-success mb-4" style="display: none;">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Existing record found!</strong>
+                            <p class="mb-0 small" id="existingPatientInfo"></p>
+                        </div>
+                        
+                        <!-- Patient-specific fields -->
+                        <div id="patientFields">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="age" class="form-label">Age</label>
+                                    <input type="number" class="form-control" id="age" name="age" 
+                                           min="0" max="150" placeholder="Your age">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="gender" class="form-label">Gender</label>
+                                    <select class="form-select" id="gender" name="gender">
+                                        <option value="Not Specified">Select Gender</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Doctor-specific fields -->
+                        <div id="doctorFields" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="specialization" class="form-label">Specialization *</label>
+                                    <select class="form-select" id="specialization" name="specialization">
+                                        <option value="General Medicine">General Medicine</option>
+                                        <option value="Cardiology">Cardiology</option>
+                                        <option value="Neurology">Neurology</option>
+                                        <option value="Orthopedics">Orthopedics</option>
+                                        <option value="Pediatrics">Pediatrics</option>
+                                        <option value="Dermatology">Dermatology</option>
+                                        <option value="Psychiatry">Psychiatry</option>
+                                        <option value="Oncology">Oncology</option>
+                                        <option value="Gynecology">Gynecology</option>
+                                        <option value="ENT">ENT</option>
+                                        <option value="Ophthalmology">Ophthalmology</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="license_number" class="form-label">License Number *</label>
+                                    <input type="text" class="form-control" id="license_number" name="license_number" 
+                                           placeholder="Medical license number">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Password -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="password" class="form-label">Password *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" id="password" name="password" 
+                                           placeholder="Min 6 characters" required minlength="6">
+                                    <button class="btn btn-outline-secondary toggle-password" type="button">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="password-strength mt-2" id="passwordStrength"></div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="confirm_password" class="form-label">Confirm Password *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
+                                           placeholder="Confirm password" required>
+                                </div>
+                                <div id="passwordMatch" class="mt-1"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Terms -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="terms" required>
+                                <label class="form-check-label" for="terms">
+                                    I agree to the <a href="#" class="text-primary">Terms of Service</a> 
+                                    and <a href="#" class="text-primary">Privacy Policy</a>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-lg w-100" id="submitBtn">
+                            <i class="fas fa-user-plus me-2"></i>Create Account
+                        </button>
+                    </form>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="text-center">
+                        <p class="mb-0">
+                            Already have an account? 
+                            <a href="{{ url_for('auth.login') }}" class="text-primary fw-bold">Login here</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const roleRadios = document.querySelectorAll('input[name="role"]');
+    const patientFields = document.getElementById('patientFields');
+    const doctorFields = document.getElementById('doctorFields');
+    const patientLinkingNotice = document.getElementById('patientLinkingNotice');
+    const existingPatientAlert = document.getElementById('existingPatientAlert');
+    const existingPatientInfo = document.getElementById('existingPatientInfo');
+    
+    // Show/hide role-specific fields
+    roleRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'patient') {
+                patientFields.style.display = 'block';
+                doctorFields.style.display = 'none';
+                patientLinkingNotice.style.display = 'block';
+            } else if (this.value === 'doctor') {
+                patientFields.style.display = 'none';
+                doctorFields.style.display = 'block';
+                patientLinkingNotice.style.display = 'none';
+                existingPatientAlert.style.display = 'none';
+            }
+        });
+    });
+    
+    // Check for existing patient when email or phone changes
+    let checkTimeout;
+    function checkExistingPatient() {
+        clearTimeout(checkTimeout);
+        
+        const email = document.getElementById('email').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const role = document.querySelector('input[name="role"]:checked').value;
+        
+        if (role !== 'patient') return;
+        if (!email && !phone) return;
+        
+        checkTimeout = setTimeout(() => {
+            const formData = new FormData();
+            formData.append('email', email);
+            formData.append('phone', phone);
+            formData.append('csrf_token', '{{ csrf_token() }}');
+            
+            fetch('/check-existing-patient', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.exists) {
+                    existingPatientAlert.style.display = 'block';
+                    existingPatientInfo.textContent = data.message;
+                } else {
+                    existingPatientAlert.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error checking patient:', error);
+            });
+        }, 500);  // Debounce for 500ms
+    }
+    
+    document.getElementById('email').addEventListener('input', checkExistingPatient);
+    document.getElementById('phone').addEventListener('input', checkExistingPatient);
+    
+    // Toggle password visibility
+    document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', function() {
+            const input = this.parentElement.querySelector('input');
+            const icon = this.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+    
+    // Password strength indicator
+    document.getElementById('password').addEventListener('input', function() {
+        const strength = calculatePasswordStrength(this.value);
+        const strengthDiv = document.getElementById('passwordStrength');
+        
+        let strengthClass = 'bg-danger';
+        let strengthText = 'Weak';
+        let width = 25;
+        
+        if (strength >= 4) {
+            strengthClass = 'bg-success';
+            strengthText = 'Strong';
+            width = 100;
+        } else if (strength >= 3) {
+            strengthClass = 'bg-info';
+            strengthText = 'Good';
+            width = 75;
+        } else if (strength >= 2) {
+            strengthClass = 'bg-warning';
+            strengthText = 'Medium';
+            width = 50;
+        }
+        
+        strengthDiv.innerHTML = `
+            <div class="progress" style="height: 5px;">
+                <div class="progress-bar ${strengthClass}" style="width: ${width}%"></div>
+            </div>
+            <small class="text-muted">${strengthText}</small>
+        `;
+    });
+    
+    function calculatePasswordStrength(password) {
+        let strength = 0;
+        if (password.length >= 6) strength++;
+        if (password.length >= 10) strength++;
+        if (/[A-Z]/.test(password)) strength++;
+        if (/[0-9]/.test(password)) strength++;
+        if (/[^A-Za-z0-9]/.test(password)) strength++;
+        return strength;
+    }
+    
+    // Password match check
+    document.getElementById('confirm_password').addEventListener('input', function() {
+        const password = document.getElementById('password').value;
+        const confirmPassword = this.value;
+        const matchDiv = document.getElementById('passwordMatch');
+        
+        if (confirmPassword === '') {
+            matchDiv.innerHTML = '';
+        } else if (password === confirmPassword) {
+            matchDiv.innerHTML = '<small class="text-success"><i class="fas fa-check"></i> Passwords match</small>';
+        } else {
+            matchDiv.innerHTML = '<small class="text-danger"><i class="fas fa-times"></i> Passwords do not match</small>';
+        }
+    });
+    
+    // Form validation
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        
+        if (password !== confirmPassword) {
+            e.preventDefault();
+            alert('Passwords do not match!');
+            return false;
+        }
+    });
+</script>
+{% endblock %}

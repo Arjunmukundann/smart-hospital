@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Dr. {{ doctor.full_name }} - Patient Portal{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Back Button -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <a href="{{ url_for('patient.find_doctors') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Back to Find Doctors
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Doctor Profile Card -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    {% if doctor.profile_picture %}
+                        <img src="{{ url_for('static', filename='uploads/profiles/' ~ doctor.profile_picture) }}" 
+                             alt="{{ doctor.full_name }}" 
+                             class="rounded-circle mb-3" 
+                             style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" 
+                             style="width: 150px; height: 150px; font-size: 4rem;">
+                            {{ doctor.full_name[0]|upper }}
+                        </div>
+                    {% endif %}
+                    
+                    <h3>Dr. {{ doctor.full_name }}</h3>
+                    
+                    {% if doctor.specialization %}
+                        <p class="text-primary mb-2">{{ doctor.specialization }}</p>
+                    {% endif %}
+                    
+                    {% if doctor.department %}
+                        <p class="text-muted mb-3">{{ doctor.department }}</p>
+                    {% endif %}
+                    
+                    <!-- Rating -->
+                    <div class="mb-3">
+                        {% if doctor.average_rating %}
+                            {% set rating = doctor.average_rating|round(1) %}
+                            {% for i in range(5) %}
+                                {% if i < rating|int %}
+                                    <i class="fas fa-star text-warning fa-lg"></i>
+                                {% elif i < rating %}
+                                    <i class="fas fa-star-half-alt text-warning fa-lg"></i>
+                                {% else %}
+                                    <i class="far fa-star text-warning fa-lg"></i>
+                                {% endif %}
+                            {% endfor %}
+                            <p class="mt-1 mb-0">{{ rating }} out of 5</p>
+                            <small class="text-muted">{{ doctor.total_ratings or 0 }} reviews</small>
+                        {% else %}
+                            <p class="text-muted">No ratings yet</p>
+                        {% endif %}
+                    </div>
+                    
+                    <hr>
+                    
+                    <a href="{{ url_for('patient.book_appointment') }}?doctor_id={{ doctor.id }}" 
+                       class="btn btn-primary btn-lg w-100">
+                        <i class="fas fa-calendar-plus me-2"></i>Book Appointment
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Doctor Details -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>About</h5>
+                </div>
+                <div class="card-body">
+                    {% if doctor.bio %}
+                        <p>{{ doctor.bio }}</p>
+                    {% else %}
+                        <p class="text-muted">No bio available.</p>
+                    {% endif %}
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-graduation-cap me-2 text-primary"></i>Qualifications</h6>
+                            <p>{{ doctor.qualification or 'Not specified' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-briefcase-medical me-2 text-primary"></i>Experience</h6>
+                            <p>{{ doctor.experience_years or 0 }} years</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-rupee-sign me-2 text-primary"></i>Consultation Fee</h6>
+                            <p>₹{{ doctor.consultation_fee or 'Not specified' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-video me-2 text-primary"></i>Video Consultation</h6>
+                            <p>₹{{ doctor.video_consultation_fee or 'Not available' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Reviews -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Patient Reviews</h5>
+                </div>
+                <div class="card-body">
+                    {% if reviews %}
+                        {% for review in reviews %}
+                        <div class="border-bottom pb-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>
+                                        {% if review.is_anonymous %}
+                                            Anonymous Patient
+                                        {% else %}
+                                            {{ review.patient.full_name if review.patient else 'Patient' }}
+                                        {% endif %}
+                                    </strong>
+                                    <div class="text-warning">
+                                        {% for i in range(5) %}
+                                            {% if i < review.overall_rating %}
+                                                <i class="fas fa-star"></i>
+                                            {% else %}
+                                                <i class="far fa-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <small class="text-muted">
+                                    {{ review.created_at.strftime('%b %d, %Y') }}
+                                </small>
+                            </div>
+                            {% if review.title %}
+                                <h6 class="mt-2 mb-1">{{ review.title }}</h6>
+                            {% endif %}
+                            {% if review.review %}
+                                <p class="mb-0 text-muted">{{ review.review }}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-3">
+                            <i class="fas fa-comments me-2"></i>No reviews yet
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
