@@ -201,10 +201,10 @@ def add_default_data(db):
                 role='admin',
                 is_active=True
             )
-            admin.set_password('admin123')
+            admin.set_password('######')
             db.session.add(admin)
             print("   ✅ Admin user created")
-            print("      Username: admin | Password: admin123")
+            print("      Username: admin | Password: ####")
         
         # Create doctor if not exists
         doctor = User.query.filter_by(username='doctor').first()
@@ -218,10 +218,10 @@ def add_default_data(db):
                 specialization='Cardiologist',
                 is_active=True
             )
-            doctor.set_password('doctor123')
+            doctor.set_password('######')
             db.session.add(doctor)
             print("   ✅ Doctor user created")
-            print("      Username: doctor | Password: doctor123")
+            print("      Username: doctor | Password: ##########")
         
         # Create patient if not exists
         patient_user = User.query.filter_by(username='patient').first()
@@ -233,10 +233,10 @@ def add_default_data(db):
                 role='patient',
                 is_active=True
             )
-            patient_user.set_password('patient123')
+            patient_user.set_password('######')
             db.session.add(patient_user)
             print("   ✅ Patient user created")
-            print("      Username: patient | Password: patient123")
+            print("      Username: patient | Password: #########")
         
         # Create pharmacist if not exists
         pharmacist = User.query.filter_by(username='pharmacist').first()
@@ -248,10 +248,10 @@ def add_default_data(db):
                 role='pharmacist',
                 is_active=True
             )
-            pharmacist.set_password('pharmacist123')
+            pharmacist.set_password('#########')
             db.session.add(pharmacist)
             print("   ✅ Pharmacist user created")
-            print("      Username: pharmacist | Password: pharmacist123")
+            print("      Username: pharmacist | Password: ########3")
         
         db.session.commit()
         
