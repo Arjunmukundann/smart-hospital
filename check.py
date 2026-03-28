@@ -17,11 +17,11 @@ with app.app_context():
         
         pharmacist = User()
         pharmacist.username = 'pharmacist'
-        pharmacist.email = 'pharmacist@hospital.com'
+        pharmacist.email = 'emailid.com'
         pharmacist.full_name = 'Default Pharmacist'
         pharmacist.role = 'pharmacist'
         pharmacist.is_active = True
-        pharmacist.set_password('pharmacist123')
+        pharmacist.set_password('########')
         db.session.add(pharmacist)
         db.session.commit()
-        print(f"✅ Pharmacist created: pharmacist@hospital.com / pharmacist123")
+        print(f"✅ Pharmacist created: emailid.com / #######")
