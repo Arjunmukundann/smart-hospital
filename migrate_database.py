@@ -251,7 +251,7 @@ def add_default_data(db):
             pharmacist.set_password('#########')
             db.session.add(pharmacist)
             print("   ✅ Pharmacist user created")
-            print("      Username: pharmacist | Password: ########3")
+            print("      Username: pharmacist | Password: #########")
         
         db.session.commit()
         
